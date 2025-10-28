@@ -1,0 +1,218 @@
+﻿@page "/register-student"
+@using Models
+@using DBL
+
+<PageTitle>EduQuest | Student Registration</PageTitle>
+
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #eef2ff, #ffffff);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .register-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 2.5rem;
+        width: 400px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        transition: 0.3s ease;
+    }
+
+        .register-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .title {
+        font-size: 1.8rem;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .brand {
+        color: #3b82f6;
+        font-weight: 700;
+    }
+
+    .subtitle {
+        color: #64748b;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+    }
+
+    .highlight {
+        color: #2563eb;
+        font-weight: 600;
+    }
+
+    .form-group {
+        text-align: left;
+        margin-bottom: 1.3rem;
+    }
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        color: #334155;
+    }
+
+    .input {
+        width: 100%;
+        padding: 0.7rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        outline: none;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+    }
+
+        .input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+    .btn-register {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+        .btn-register:hover {
+            background: #2563eb;
+            transform: scale(1.02);
+        }
+
+    .success-msg {
+        color: #16a34a;
+        margin-top: 1rem;
+        font-weight: 600;
+    }
+
+    .error-msg {
+        color: #dc2626;
+        margin-top: 1rem;
+        font-weight: 600;
+    }
+
+    .loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .back-link {
+        margin-top: 1.2rem;
+        display: block;
+        color: #3b82f6;
+        font-weight: 500;
+        text-decoration: none;
+        transition: 0.2s ease;
+    }
+
+        .back-link:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+        <h2 class="title">Welcome to <span class="brand">EduQuest</span></h2>
+        <p class="subtitle">Join us as a <span class="highlight">Student</span> and start your learning journey!</p>
+
+        <EditForm Model="@student" OnValidSubmit="@HandleRegister">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <InputText @bind-Value="student.FullName" class="input" placeholder="Enter your full name" />
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <InputText @bind-Value="student.Email" class="input" placeholder="example@email.com" />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <InputText @bind-Value="student.Password" type="password" class="input" placeholder="••••••••" />
+            </div>
+
+            <button type="submit" class="btn-register @(isLoading ? "loading" : "")" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>⏳ Registering...</span>
+                }
+                else
+                {
+                    <span>📘 Register Now</span>
+                }
+            </button>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <p class="@messageClass">@message</p>
+            }
+
+            <a href="/" class="back-link">← Back to Home</a>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private Customers student = new Customers();
+    private CustomerDB db = new CustomerDB();
+    private string message = string.Empty;
+    private string messageClass = string.Empty;
+    private bool isLoading = false;
+
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        message = string.Empty;
+
+        try
+        {
+            student.Role = 0; // 0 = Student
+            student.CreatedAt = DateTime.Now;
+
+            var existing = await db.SelectByEmailAsync(student.Email);
+            if (existing != null)
+            {
+                message = "⚠️ This email is already registered.";
+                messageClass = "error-msg";
+            }
+            else
+            {
+                await db.InsertGetObjAsync(student);
+                message = "✅ Registration successful! Welcome to EduQuest 🎉";
+                messageClass = "success-msg";
+
+                student = new Customers(); // Reset fields
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"❌ Registration failed: {ex.Message}";
+            messageClass = "error-msg";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

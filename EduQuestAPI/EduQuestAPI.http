@@ -1,0 +1,6 @@
+@EduQuestAPI_HostAddress = http://localhost:5188
+
+GET {{EduQuestAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
