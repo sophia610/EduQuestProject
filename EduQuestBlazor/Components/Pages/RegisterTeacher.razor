@@ -1,9 +1,9 @@
-﻿@page "/register-student"
+﻿@page "/register-teacher"
 @using Models
 @using DBL
 @inject NavigationManager NavManager
 
-<PageTitle>EduQuest | Student Registration</PageTitle>
+<PageTitle>EduQuest | Teacher Registration</PageTitle>
 
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
@@ -432,11 +432,11 @@
             </div>
 
             <h1 class="welcome-title">
-                Start Your Learning Journey Today
+                Inspire the Next Generation
             </h1>
 
             <p class="welcome-description">
-                Join thousands of students already achieving their academic goals with EduQuest's interactive platform.
+                Join thousands of educators creating engaging quizzes and empowering students to achieve excellence.
             </p>
 
             <div class="benefit-list">
@@ -444,19 +444,19 @@
                     <div class="benefit-icon">
                         <div class="check-icon">✓</div>
                     </div>
-                    <span class="benefit-text">Access unlimited interactive quizzes</span>
+                    <span class="benefit-text">Create quizzes in minutes</span>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">
                         <div class="check-icon">✓</div>
                     </div>
-                    <span class="benefit-text">Track your progress in real-time</span>
+                    <span class="benefit-text">Monitor student progress in real-time</span>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">
                         <div class="check-icon">✓</div>
                     </div>
-                    <span class="benefit-text">Get personalized tutoring support</span>
+                    <span class="benefit-text">Provide personalized tutoring support</span>
                 </div>
             </div>
         </div>
@@ -466,33 +466,33 @@
         <div class="register-card">
             <div class="form-header">
                 <div class="role-badge">
-                    <span>🎓</span>
-                    <span>Student Registration</span>
+                    <span>👨‍🏫</span>
+                    <span>Teacher Registration</span>
                 </div>
                 <h2 class="form-title">Create your account</h2>
-                <p class="form-subtitle">Start learning in less than a minute</p>
+                <p class="form-subtitle">Start inspiring students today</p>
             </div>
 
-            <EditForm Model="@student" OnValidSubmit="@HandleRegister">
+            <EditForm Model="@teacher" OnValidSubmit="@HandleRegister">
                 <DataAnnotationsValidator />
 
                 <div class="form-group">
                     <label class="form-label">Full Name</label>
-                    <InputText @bind-Value="student.FullName"
+                    <InputText @bind-Value="teacher.FullName"
                                class="form-input"
                                placeholder="Enter your full name" />
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <InputText @bind-Value="student.Email"
+                    <InputText @bind-Value="teacher.Email"
                                class="form-input"
                                placeholder="your@email.com" />
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Password</label>
-                    <InputText @bind-Value="student.Password"
+                    <InputText @bind-Value="teacher.Password"
                                type="password"
                                class="form-input"
                                placeholder="Create a strong password" />
@@ -524,7 +524,7 @@
 </div>
 
 @code {
-    private Customers student = new Customers();
+    private Customers teacher = new Customers();
     private CustomerDB db = new CustomerDB();
     private string message = string.Empty;
     private string messageClass = string.Empty;
@@ -540,9 +540,9 @@
 
         try
         {
-            if (string.IsNullOrWhiteSpace(student.FullName) ||
-                string.IsNullOrWhiteSpace(student.Email) ||
-                string.IsNullOrWhiteSpace(student.Password))
+            if (string.IsNullOrWhiteSpace(teacher.FullName) ||
+                string.IsNullOrWhiteSpace(teacher.Email) ||
+                string.IsNullOrWhiteSpace(teacher.Password))
             {
                 message = "Please fill in all fields.";
                 messageClass = "error-msg";
@@ -550,10 +550,10 @@
                 return;
             }
 
-            student.Role = 0;
-            student.CreatedAt = DateTime.Now;
+            teacher.Role = 1;
+            teacher.CreatedAt = DateTime.Now;
 
-            var existing = await db.SelectByEmailAsync(student.Email);
+            var existing = await db.SelectByEmailAsync(teacher.Email);
             if (existing != null)
             {
                 message = "This email is already registered. Please sign in instead.";
@@ -561,7 +561,7 @@
             }
             else
             {
-                await db.InsertGetObjAsync(student);
+                await db.InsertGetObjAsync(teacher);
                 message = "Registration successful! Redirecting to login...";
                 messageClass = "success-msg";
 

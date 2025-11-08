@@ -1,101 +1,446 @@
 ﻿@page "/register2"
+@inject NavigationManager NavManager
 
 <PageTitle>EduQuest | Register</PageTitle>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
 <style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        background: white;
+        overflow-x: hidden;
+    }
+
+    .register-page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        position: relative;
+    }
+
+    /* Subtle Background Pattern */
+    .background-pattern {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0.03;
+        background-image: linear-gradient(30deg, #667eea 12%, transparent 12.5%, transparent 87%, #667eea 87.5%, #667eea), linear-gradient(150deg, #667eea 12%, transparent 12.5%, transparent 87%, #667eea 87.5%, #667eea);
+        background-size: 80px 140px;
+        background-position: 0 0, 40px 70px;
+    }
+
+    /* Navigation */
+    .navbar {
+        position: relative;
+        z-index: 10;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .nav-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 72px;
+    }
+
+    .logo-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+        .logo-link:hover {
+            transform: scale(1.02);
+        }
+
+    .nav-logo-icon {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .nav-logo-text {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .nav-btn {
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        background: #f3f4f6;
+        color: #374151;
+        text-decoration: none;
+    }
+
+        .nav-btn:hover {
+            background: #e5e7eb;
+        }
+
+    /* Main Content */
+    .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 80px 40px;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .content-header {
+        text-align: center;
+        margin-bottom: 56px;
+    }
+
+    .page-title {
+        font-size: 56px;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 16px;
+        line-height: 1.1;
+    }
+
+    .title-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-subtitle {
+        font-size: 20px;
+        color: #6b7280;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Role Cards */
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        max-width: 900px;
+        width: 100%;
+        margin-bottom: 40px;
+    }
+
     .role-card {
-        transition: all 0.3s ease;
-        border-radius: 1.5rem;
+        background: white;
+        border: 3px solid #e5e7eb;
+        border-radius: 24px;
+        padding: 48px 36px;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+        text-align: center;
     }
 
         .role-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+            transform: translateY(-8px);
+            border-color: #667eea;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
         }
 
-    .fade-in {
-        animation: fadeIn 0.7s ease forwards;
+        .role-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f5f3ff 0%, #eff6ff 100%);
+            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
+        }
+
+    .role-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin: 0 auto 24px;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
     }
 
-    keyframes fadeIn {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(20px);
+    .role-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .role-description {
+        font-size: 16px;
+        color: #6b7280;
+        line-height: 1.6;
     }
 
+    .selected-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 32px;
+        height: 32px;
+        background: #10b981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        animation: scaleIn 0.3s ease-out;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+
+        to {
+            transform: scale(1);
+        }
+    }
+
+    /* Continue Section */
+    .continue-section {
+        background: white;
+        border-radius: 20px;
+        padding: 36px 48px;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        max-width: 600px;
+        width: 100%;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .continue-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .continue-text {
+        font-size: 16px;
+        color: #6b7280;
+        margin-bottom: 28px;
+    }
+
+        .continue-text strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+    .continue-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 12px;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+    /* Footer */
+    .footer {
+        padding: 32px 40px;
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .footer-text {
+        margin-bottom: 12px;
+    }
+
+    .footer-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+        .footer-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .cards-container {
+            grid-template-columns: 1fr;
+            max-width: 400px;
+        }
+
+        .page-title {
+            font-size: 40px;
+        }
+
+        .page-subtitle {
+            font-size: 18px;
+        }
+
+        .role-card {
+            padding: 36px 28px;
+        }
+
+        .continue-section {
+            padding: 28px 32px;
+        }
+
+        .nav-container {
+            padding: 0 24px;
+        }
+
+        .content {
+            padding: 60px 24px;
+        }
     }
 </style>
-<div class="register-page d-flex flex-column align-items-center justify-content-center min-vh-100 text-center bg-light position-relative overflow-hidden">
 
-    
-    <div class="position-absolute top-0 start-0 translate-middle bg-primary rounded-circle opacity-25" style="width: 200px; height: 200px;"></div>
-    <div class="position-absolute bottom-0 end-0 translate-middle bg-info rounded-circle opacity-25" style="width: 300px; height: 300px;"></div>
+<div class="register-page">
+    <div class="background-pattern"></div>
 
-    <div class="mb-5">
-        <h1 class="fw-bold display-4 text-primary">Welcome to <span class="text-info">EduQuest</span></h1>
-        <p class="lead text-secondary">Let's get started — who are you joining as?</p>
-    </div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-link" @onclick="GoHome">
+                <div class="nav-logo-icon">Q</div>
+                <div class="nav-logo-text">EduQuest</div>
+            </div>
+            <button class="nav-btn" @onclick="GoHome">Back to Home</button>
+        </div>
+    </nav>
 
-    <div class="d-flex flex-column flex-md-row gap-4 mb-5 justify-content-center">
-        <!-- Student Card -->
-        <div class="card role-card border-0 shadow-lg" style="width: 16rem; cursor: pointer;" @onclick='() => SelectRole("Student")'>
-            <div class="card-body d-flex flex-column align-items-center">
-                <img src="images/student.png" alt="Student" class="mb-3" style="width: 90px; height: 90px;" />
-                <h5 class="card-title text-primary fw-bold">I'm a Student</h5>
-                <p class="card-text text-muted small">I want to learn, explore and grow 🌱</p>
+    <!-- Main Content -->
+    <main class="content">
+        <div class="content-header">
+            <h1 class="page-title">
+                Join <span class="title-gradient">EduQuest</span>
+            </h1>
+            <p class="page-subtitle">
+                Choose your role to begin your learning journey
+            </p>
+        </div>
+
+        <div class="cards-container">
+            <div class="role-card @(SelectedRole == "Student" ? "selected" : "")"
+                 @onclick='() => SelectRole("Student")'>
+                @if (SelectedRole == "Student")
+                {
+                    <div class="selected-badge">✓</div>
+                }
+                <div class="role-icon">🎓</div>
+                <h3 class="role-title">Student</h3>
+                <p class="role-description">
+                    Discover, learn and grow with interactive quizzes and personalized feedback
+                </p>
+            </div>
+
+            <div class="role-card @(SelectedRole == "Teacher" ? "selected" : "")"
+                 @onclick='() => SelectRole("Teacher")'>
+                @if (SelectedRole == "Teacher")
+                {
+                    <div class="selected-badge">✓</div>
+                }
+                <div class="role-icon">👨‍🏫</div>
+                <h3 class="role-title">Teacher</h3>
+                <p class="role-description">
+                    Create engaging quizzes and inspire students with smart teaching tools
+                </p>
             </div>
         </div>
 
-        <!-- Teacher Card -->
-        <div class="card role-card border-0 shadow-lg" style="width: 16rem; cursor: pointer;" @onclick='() => SelectRole("Teacher")'>
-            <div class="card-body d-flex flex-column align-items-center">
-                <img src="images/teacher.png" alt="Teacher" class="mb-3" style="width: 90px; height: 90px;" />
-                <h5 class="card-title text-info fw-bold">I'm a Teacher</h5>
-                <p class="card-text text-muted small">I want to inspire and guide others ✨</p>
+        @if (SelectedRole != null)
+        {
+            <div class="continue-section">
+                <h2 class="continue-title">Perfect Choice!</h2>
+                <p class="continue-text">
+                    You're joining as a <strong>@SelectedRole</strong>
+                </p>
+                <button class="continue-btn" @onclick="ContinueToNextPage">
+                    <span>Continue</span>
+                    <span>→</span>
+                </button>
             </div>
-        </div>
-    </div>
+        }
+    </main>
 
-    @if (SelectedRole != null)
-    {
-        <div class="fade-in">
-            <h2 class="fw-bold mb-3 text-secondary">Great choice! 👏</h2>
-            <p class="text-muted mb-4">Let's start your journey as a <span class="fw-semibold text-primary">@SelectedRole</span>.</p>
-            <button class="btn btn-lg btn-primary px-5 shadow-sm" @onclick="ContinueToNextPage">
-                Continue →
-            </button>
-        </div>
-    }
-
-    <div class="position-absolute bottom-0 mb-3 text-muted small fst-italic">
-        Empowering learning, inspiring growth 🌟
-    </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">
+            Already have an account? <a href="/login" class="footer-link">Sign in here</a>
+        </p>
+    </footer>
 </div>
-
-
 
 @code {
     private string? SelectedRole { get; set; }
 
-    [Inject] NavigationManager NavManager { get; set; } = default!;
+    void SelectRole(string role) => SelectedRole = role;
 
-    private void SelectRole(string role)
-    {
-        SelectedRole = role;
-    }
-
-    private void ContinueToNextPage()
+    void ContinueToNextPage()
     {
         if (SelectedRole == "Student")
             NavManager.NavigateTo("/register-student");
         else if (SelectedRole == "Teacher")
             NavManager.NavigateTo("/register-teacher");
     }
+
+    void GoHome() => NavManager.NavigateTo("/");
 }
