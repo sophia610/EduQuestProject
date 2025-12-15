@@ -1,0 +1,1414 @@
+﻿@page "/create-quiz"
+@page "/CreateQuiz"
+@using DBL
+@using Models
+@inject NavigationManager nav
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+
+<PageTitle>EduQuest | Create Quiz</PageTitle>
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        background: #f5f7fa;
+    }
+
+    .dashboard {
+        display: flex;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf4 100%);
+    }
+
+    .sidebar {
+        width: 240px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding: 0 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        text-align: left;
+        font-weight: 500;
+    }
+
+        .sidebar-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+        max-width: 100%;
+    }
+
+    .progress-bar-container {
+        background: white;
+        border-radius: 16px;
+        padding: 24px 32px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+    }
+
+    .progress-line {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #e5e7eb;
+        z-index: 1;
+    }
+
+    .progress-line-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 0.3s;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #9ca3af;
+        margin-bottom: 8px;
+        transition: all 0.3s;
+    }
+
+    .step.active .step-circle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+    }
+
+    .step.completed .step-circle {
+        background: #10b981;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #9ca3af;
+    }
+
+    .step.active .step-label {
+        color: #667eea;
+    }
+
+    .header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        font-size: 16px;
+    }
+
+    .create-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        margin-bottom: 24px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .section-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 10px;
+    }
+
+    .input-with-toggle {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        flex: 1;
+        padding: 16px 18px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        background: #f9fafb;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 140px;
+        resize: vertical;
+    }
+
+    .toggle-btn {
+        padding: 0 20px;
+        background: #eff6ff;
+        border: 2px solid #667eea;
+        color: #667eea;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .toggle-btn:hover {
+        background: #dbeafe;
+    }
+
+    .toggle-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .answers-section {
+        margin-top: 32px;
+    }
+
+    .answer-item {
+        background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .answer-item.correct {
+        border-color: #10b981;
+        background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+
+    .answer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .answer-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        color: #374151;
+        font-size: 16px;
+    }
+
+    .answer-badge {
+        background: #10b981;
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .correct-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .correct-checkbox:hover {
+        background: #f3f4f6;
+    }
+
+    .correct-checkbox input {
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        accent-color: #10b981;
+    }
+
+    .correct-checkbox label {
+        font-size: 14px;
+        color: #6b7280;
+        cursor: pointer;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .question-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 16px;
+        position: relative;
+    }
+
+    .question-number {
+        position: absolute;
+        top: -12px;
+        left: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .question-content {
+        margin-top: 8px;
+    }
+
+    .question-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .question-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .question-answers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .mini-answer {
+        padding: 10px 14px;
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+    }
+
+    .mini-answer.correct {
+        background: #f0fdf4;
+        border-color: #10b981;
+        color: #16a34a;
+        font-weight: 600;
+    }
+
+    .question-actions {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        font-size: 16px;
+    }
+
+    .icon-btn.edit {
+        background: #eff6ff;
+        color: #667eea;
+    }
+
+    .icon-btn.edit:hover {
+        background: #dbeafe;
+    }
+
+    .icon-btn.delete {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .icon-btn.delete:hover {
+        background: #fee2e2;
+    }
+
+    .add-question-btn {
+        width: 100%;
+        padding: 20px;
+        background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+        color: #667eea;
+        border: 3px dashed #667eea;
+        border-radius: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .add-question-btn:hover {
+        background: linear-gradient(135deg, #dbeafe 0%, #f3e8ff 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+    }
+
+    .actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 18px;
+        border: none;
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+    }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+        }
+
+    .success-message {
+        background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+        border-left: 5px solid #10b981;
+        padding: 20px 24px;
+        border-radius: 14px;
+        color: #065f46;
+        font-weight: 600;
+        margin-bottom: 24px;
+        animation: slideIn 0.4s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    .error-message {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-left: 5px solid #ef4444;
+        padding: 20px 24px;
+        border-radius: 14px;
+        color: #991b1b;
+        font-weight: 600;
+        margin-bottom: 24px;
+        animation: slideIn 0.4s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .review-summary {
+        background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+        border: 2px solid #667eea;
+        border-radius: 20px;
+        padding: 32px;
+        margin-bottom: 32px;
+    }
+
+    .summary-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .summary-item {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .summary-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .summary-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 600;
+    }
+</style>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            <div class="logo-text">EduQuest</div>
+        </div>
+        <div class="sidebar-menu">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/teacher-home"))">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="sidebar-item active">
+                <span>➕</span>
+                <span>Create Quiz</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-quizzes"))">
+                <span>📚</span>
+                <span>My Quizzes</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+            <div class="progress-steps">
+                <div class="progress-line">
+                    <div class="progress-line-fill" style="width: @((currentStep - 1) * 50)%"></div>
+                </div>
+                <div class="step @(currentStep >= 1 ? "completed" : "") @(currentStep == 1 ? "active" : "")">
+                    <div class="step-circle">@(currentStep > 1 ? "✓" : "1")</div>
+                    <div class="step-label">Create Questions</div>
+                </div>
+                <div class="step @(currentStep >= 2 ? "completed" : "") @(currentStep == 2 ? "active" : "")">
+                    <div class="step-circle">@(currentStep > 2 ? "✓" : "2")</div>
+                    <div class="step-label">Review Quiz</div>
+                </div>
+                <div class="step @(currentStep == 3 ? "active" : "")">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Publish</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1 class="page-title">Create New Quiz</h1>
+            <p class="page-subtitle">@GetStepDescription()</p>
+        </div>
+
+        <div class="create-container">
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="success-message">
+                    <span style="font-size: 24px;">✓</span>
+                    <span>@successMessage</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="error-message">
+                    <span style="font-size: 24px;">✗</span>
+                    <span>@errorMessage</span>
+                </div>
+            }
+
+            @if (currentStep == 1)
+            {
+                <!-- Step 1: Create Questions -->
+                <EditForm Model="@currentQuestion" OnValidSubmit="HandleAddQuestion">
+                    <div class="form-card">
+                        <div class="section-header">
+                            <div class="section-icon">📝</div>
+                            <div>
+                                <h2 class="section-title">Quiz Details</h2>
+                                <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Select or create a new subject and topic</p>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Subject</label>
+                                <div class="input-with-toggle">
+                                    @if (isCustomSubject)
+                                    {
+                                        <input type="text" @bind="customSubject" class="form-input" placeholder="Enter new subject (e.g., Physics)" />
+                                    }
+                                    else
+                                    {
+                                        <select value="@selectedSubjectId" @onchange="OnSubjectChanged" class="form-select">
+                                            <option value="0">-- Select Subject --</option>
+                                            @foreach (var subject in allSubjects)
+                                            {
+                                                <option value="@subject.subject_id">@subject.subject_name</option>
+                                            }
+                                        </select>
+                                    }
+                                    <button type="button" class="toggle-btn @(isCustomSubject ? "active" : "")" @onclick="ToggleSubjectInput">
+                                        @(isCustomSubject ? "📋 Select" : "✏️ Custom")
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Topic</label>
+                                <div class="input-with-toggle">
+                                    @if (isCustomTopic)
+                                    {
+                                        <input type="text" @bind="customTopic" class="form-input" placeholder="Enter topic (e.g., Momentum & Impulse)" />
+                                    }
+                                    else
+                                    {
+                                        <select @bind="selectedTopicId" class="form-select" disabled="@(selectedSubjectId == 0 && !isCustomSubject)">
+                                            <option value="0">-- Select Topic --</option>
+                                            @foreach (var topic in filteredTopics)
+                                            {
+                                                <option value="@topic.topic_id">@topic.topic_name</option>
+                                            }
+                                        </select>
+                                    }
+                                    <button type="button" class="toggle-btn @(isCustomTopic ? "active" : "")" @onclick="ToggleTopicInput">
+                                        @(isCustomTopic ? "📋 Select" : "✏️ Custom")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Question</label>
+                            <textarea @bind="currentQuestion.QuestionText" 
+                                      class="form-textarea" 
+                                      placeholder="Enter your question here..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Hint (Optional)</label>
+                            <input type="text" 
+                                   @bind="questionHint" 
+                                   class="form-input" 
+                                   placeholder="Provide a hint to help students..." />
+                        </div>
+                    </div>
+
+                    <!-- Answers Section -->
+                    <div class="form-card">
+                        <div class="section-header">
+                            <div class="section-icon">✏️</div>
+                            <div>
+                                <h2 class="section-title">Answer Options</h2>
+                                <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Provide 4 answer options and mark the correct one</p>
+                            </div>
+                        </div>
+
+                        <div class="answers-section">
+                            @if (currentAnswers != null && currentAnswers.Count == 4)
+                            {
+                                @for (int i = 0; i < currentAnswers.Count; i++)
+                                {
+                                    var index = i;
+                                    <div class="answer-item @(currentAnswers[index].IsCorrect ? "correct" : "")">
+                                        <div class="answer-header">
+                                            <div class="answer-label">
+                                                <span>Answer @(index + 1)</span>
+                                                @if (currentAnswers[index].IsCorrect)
+                                                {
+                                                    <span class="answer-badge">
+                                                        <span>✓</span>
+                                                        <span>Correct Answer</span>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <input type="text" 
+                                                   class="form-input" 
+                                                   @bind="currentAnswers[index].AnswerText" 
+                                                   placeholder="Enter answer option @(index + 1)..." />
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <input type="text" 
+                                                   class="form-input" 
+                                                   @bind="currentAnswers[index].Explanation" 
+                                                   placeholder="Explanation (optional)" />
+                                        </div>
+
+                                        <div class="correct-checkbox">
+                                            <input type="radio" 
+                                                   name="correctAnswer"
+                                                   id="correct_@index" 
+                                                   checked="@currentAnswers[index].IsCorrect"
+                                                   @onchange="@(() => SetCorrectAnswer(index))" />
+                                            <label for="correct_@index">This is the correct answer</label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="actions">
+                        <button type="button" class="btn btn-secondary" @onclick="CancelCreate">
+                            <span>✖</span>
+                            <span>Cancel</span>
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                            <span>➕</span>
+                            <span>@(isLoading ? "Adding..." : allQuestions.Count > 0 ? "Add Another Question" : "Add Question")</span>
+                        </button>
+                        @if (allQuestions.Count > 0)
+                        {
+                            <button type="button" class="btn btn-success" @onclick="GoToReview">
+                                <span>👁</span>
+                                <span>Review Quiz (@allQuestions.Count questions)</span>
+                            </button>
+                        }
+                    </div>
+                </EditForm>
+            }
+            else if (currentStep == 2)
+            {
+                <!-- Step 2: Review Questions -->
+                <div class="review-summary">
+                    <h2 class="summary-title">Quiz Summary</h2>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-value">@allQuestions.Count</div>
+                            <div class="summary-label">Total Questions</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">@GetSubjectName()</div>
+                            <div class="summary-label">Subject</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">@GetTopicName()</div>
+                            <div class="summary-label">Topic</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary
+<div class="summary-value">4</div>
+                                <div class="summary-label">Answers Each</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="section-header">
+                            <div class="section-icon">📋</div>
+                            <div>
+                                <h2 class="section-title">Review All Questions</h2>
+                                <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Review your questions before publishing</p>
+                            </div>
+                        </div>
+
+                    @if (allQuestions.Count == 0)
+                    {
+                            <div class="empty-state">
+                                <div class="empty-icon">📝</div>
+                                <p>No questions added yet</p>
+                            </div>
+                    }
+                    else
+                    {
+                        @for (int i = 0; i < allQuestions.Count; i++)
+                        {
+                            var qIndex = i;
+                            var q = allQuestions[qIndex];
+                                <div class="question-card">
+                                    <div class="question-number">Question @(qIndex + 1)</div>
+                                    <div class="question-actions">
+                                        <button type="button" class="icon-btn edit" @onclick="@(() => EditQuestion(qIndex))">✏️</button>
+                                        <button type="button" class="icon-btn delete" @onclick="@(() => DeleteQuestion(qIndex))">🗑️</button>
+                                    </div>
+                                    <div class="question-content">
+                                        <div class="question-text">@q.QuestionText</div>
+                                    @if (!string.IsNullOrEmpty(q.Hint))
+                                    {
+                                            <div class="question-meta">
+                                                <span>💡 Hint: @q.Hint</span>
+                                            </div>
+                                    }
+                                        <div class="question-answers">
+                                        @foreach (var ans in q.Answers)
+                                        {
+                                                <div class="mini-answer @(ans.IsCorrect ? "correct" : "")">
+                                                @ans.AnswerText
+                                                @if (ans.IsCorrect)
+                                                {
+                                                        <span> ✓</span>
+                                                }
+                                                </div>
+                                        }
+                                        </div>
+                                    </div>
+                                </div>
+                        }
+                    }
+
+                        <button type="button" class="add-question-btn" @onclick="AddAnotherQuestion">
+                            <span style="font-size: 24px;">➕</span>
+                            <span>Add Another Question</span>
+                        </button>
+                    </div>
+
+                    <!-- Review Actions -->
+                    <div class="actions">
+                        <button type="button" class="btn btn-secondary" @onclick="BackToEdit">
+                            <span>←</span>
+                            <span>Back to Edit</span>
+                        </button>
+                        <button type="button" class="btn btn-success" @onclick="PublishQuiz" disabled="@(isLoading || allQuestions.Count == 0)">
+                            <span>🚀</span>
+                            <span>@(isLoading ? "Publishing..." : "Publish Quiz")</span>
+                        </button>
+                    </div>
+            }
+            else if (currentStep == 3)
+            {
+                    <!-- Step 3: Success -->
+                    <div class="form-card" style="text-align: center; padding: 60px 40px;">
+                        <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
+                        <h2 style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 16px;">Quiz Published Successfully!</h2>
+                        <p style="font-size: 18px; color: #6b7280; margin-bottom: 32px;">Your quiz with @allQuestions.Count questions is now live for students!</p>
+                        <div class="actions" style="max-width: 500px; margin: 0 auto;">
+                            <button type="button" class="btn btn-secondary" @onclick="CreateAnother">
+                                <span>➕</span>
+                                <span>Create Another</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" @onclick="GoToDashboard">
+                                <span>🏠</span>
+                                <span>Go to Dashboard</span>
+                            </button>
+                        </div>
+                    </div>
+            }
+            </div>
+    </main>
+</div>
+
+@code {
+    // Current question being edited
+    private QuizQuestion currentQuestion = new QuizQuestion();
+    private List<Answer> currentAnswers = new List<Answer>();
+    private string questionHint = "";
+
+    // All questions in the quiz
+    private List<QuizQuestion> allQuestions = new List<QuizQuestion>();
+
+    // Subject & Topic
+    private List<Subject> allSubjects = new List<Subject>();
+    private List<Topic> allTopics = new List<Topic>();
+    private List<Topic> filteredTopics = new List<Topic>();
+    private int selectedSubjectId = 0;
+    private int selectedTopicId = 0;
+
+    // Custom Subject & Topic
+    private bool isCustomSubject = false;
+    private bool isCustomTopic = false;
+    private string customSubject = "";
+    private string customTopic = "";
+
+    // Saved Subject & Topic for the quiz
+    private string quizSubject = "";
+    private string quizTopic = "";
+
+    // UI State
+    private int currentStep = 1; // 1=Create, 2=Review, 3=Success
+    private string successMessage = "";
+    private string errorMessage = "";
+    private bool isLoading = false;
+    private int teacherId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await session.GetAsync<Customers>("user");
+        if (result.Success && result.Value != null)
+        {
+            teacherId = result.Value.user_id;
+            currentQuestion.TeacherID = teacherId;
+        }
+        else
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
+        try
+        {
+            var subjectDb = new SubjectDB();
+            allSubjects = await subjectDb.GetAllSubjectsAsync();
+
+            var topicDb = new TopicDB();
+            allTopics = await topicDb.GetAllTopicsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+        }
+
+        InitializeAnswers();
+    }
+
+    private void InitializeAnswers()
+    {
+        currentAnswers.Clear();
+        for (int i = 0; i < 4; i++)
+        {
+            currentAnswers.Add(new Answer
+                {
+                    AnswerText = "",
+                    IsCorrect = i == 0,
+                    Explanation = ""
+                });
+        }
+    }
+
+    private string GetStepDescription()
+    {
+        return currentStep switch
+        {
+            1 => "Add questions to your quiz",
+            2 => "Review and edit your questions",
+            3 => "Quiz published successfully!",
+            _ => ""
+        };
+    }
+
+    private void ToggleSubjectInput()
+    {
+        isCustomSubject = !isCustomSubject;
+        if (isCustomSubject)
+        {
+            selectedSubjectId = 0;
+            filteredTopics.Clear();
+        }
+        else
+        {
+            customSubject = "";
+        }
+    }
+
+    private void ToggleTopicInput()
+    {
+        isCustomTopic = !isCustomTopic;
+        if (isCustomTopic)
+        {
+            selectedTopicId = 0;
+        }
+        else
+        {
+            customTopic = "";
+        }
+    }
+
+    private void OnSubjectChanged(ChangeEventArgs e)
+    {
+        selectedSubjectId = Convert.ToInt32(e.Value);
+        selectedTopicId = 0;
+
+        if (selectedSubjectId > 0)
+        {
+            filteredTopics = allTopics.Where(t => t.subject_id == selectedSubjectId).ToList();
+        }
+        else
+        {
+            filteredTopics.Clear();
+        }
+
+        StateHasChanged();
+    }
+
+    private void SetCorrectAnswer(int index)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            currentAnswers[i].IsCorrect = (i == index);
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleAddQuestion()
+    {
+        errorMessage = "";
+        isLoading = true;
+
+        try
+        {
+            // Validation
+            if (!isCustomSubject && selectedSubjectId == 0)
+            {
+                errorMessage = "Please select or enter a subject.";
+                isLoading = false;
+                return;
+            }
+
+            if (isCustomSubject && string.IsNullOrWhiteSpace(customSubject))
+            {
+                errorMessage = "Please enter a subject name.";
+                isLoading = false;
+                return;
+            }
+
+            if (!isCustomTopic && selectedTopicId == 0)
+            {
+                errorMessage = "Please select or enter a topic.";
+                isLoading = false;
+                return;
+            }
+
+            if (isCustomTopic && string.IsNullOrWhiteSpace(customTopic))
+            {
+                errorMessage = "Please enter a topic name.";
+                isLoading = false;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(currentQuestion.QuestionText))
+            {
+                errorMessage = "Please enter a question.";
+                isLoading = false;
+                return;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (string.IsNullOrWhiteSpace(currentAnswers[i].AnswerText))
+                {
+                    errorMessage = $"Please fill in Answer {i + 1}.";
+                    isLoading = false;
+                    return;
+                }
+            }
+
+            if (!currentAnswers.Any(a => a.IsCorrect))
+            {
+                errorMessage = "Please mark one answer as correct.";
+                isLoading = false;
+                return;
+            }
+
+            // Save Subject & Topic for the entire quiz (first question sets it)
+            if (allQuestions.Count == 0)
+            {
+                quizSubject = isCustomSubject ? customSubject : allSubjects.FirstOrDefault(s => s.subject_id == selectedSubjectId)?.subject_name ?? "";
+                quizTopic = isCustomTopic ? customTopic : allTopics.FirstOrDefault(t => t.topic_id == selectedTopicId)?.topic_name ?? "";
+            }
+
+            // Add question to list
+            var newQ = new QuizQuestion
+                {
+                    QuestionText = currentQuestion.QuestionText,
+                    Hint = questionHint,
+                    Answers = new List<Answer>(currentAnswers.Select(a => new Answer
+                    {
+                        AnswerText = a.AnswerText,
+                        IsCorrect = a.IsCorrect,
+                        Explanation = a.Explanation
+                    }))
+                };
+
+            allQuestions.Add(newQ);
+
+            // Reset form
+            currentQuestion = new QuizQuestion { TeacherID = teacherId };
+            questionHint = "";
+            InitializeAnswers();
+
+            successMessage = $"Question {allQuestions.Count} added successfully!";
+            await Task.Delay(1500);
+            successMessage = "";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoToReview()
+    {
+        if (allQuestions.Count == 0)
+        {
+            errorMessage = "Please add at least one question before reviewing.";
+            return;
+        }
+        currentStep = 2;
+        errorMessage = "";
+    }
+
+    private void BackToEdit()
+    {
+        currentStep = 1;
+    }
+
+    private void AddAnotherQuestion()
+    {
+        currentStep = 1;
+    }
+
+    private void EditQuestion(int index)
+    {
+        // Load question for editing
+        var q = allQuestions[index];
+        currentQuestion.QuestionText = q.QuestionText;
+        questionHint = q.Hint;
+        currentAnswers = new List<Answer>(q.Answers);
+
+        // Remove from list (will be re-added when saved)
+        allQuestions.RemoveAt(index);
+        currentStep = 1;
+        successMessage = "Question loaded for editing";
+    }
+
+    private void DeleteQuestion(int index)
+    {
+        allQuestions.RemoveAt(index);
+        successMessage = "Question deleted";
+        StateHasChanged();
+    }
+
+    private async Task PublishQuiz()
+    {
+        errorMessage = "";
+        isLoading = true;
+
+        try
+        {
+            if (allQuestions.Count == 0)
+            {
+                errorMessage = "Please add at least one question.";
+                isLoading = false;
+                return;
+            }
+
+            // Create or get Subject ID
+            int finalSubjectId = selectedSubjectId;
+            if (isCustomSubject && !string.IsNullOrWhiteSpace(customSubject))
+            {
+                var subjectDb = new SubjectDB();
+                var newSubject = new Subject { subject_name = customSubject };
+                await subjectDb.InsertSubjectAsync(newSubject);
+
+                // Reload subjects to get the new ID
+                allSubjects = await subjectDb.GetAllSubjectsAsync();
+                finalSubjectId = allSubjects.FirstOrDefault(s => s.subject_name == customSubject)?.subject_id ?? 0;
+            }
+
+            // Create or get Topic ID
+            int finalTopicId = selectedTopicId;
+            if (isCustomTopic && !string.IsNullOrWhiteSpace(customTopic))
+            {
+                var topicDb = new TopicDB();
+                var newTopic = new Topic
+                    {
+                        subject_id = finalSubjectId,
+                        topic_name = customTopic
+                    };
+                await topicDb.InsertTopicAsync(newTopic);
+
+                // Reload topics to get the new ID
+                allTopics = await topicDb.GetAllTopicsAsync();
+                finalTopicId = allTopics.FirstOrDefault(t => t.topic_name == customTopic && t.subject_id == finalSubjectId)?.topic_id ?? 0;
+            }
+
+            // Save all questions
+            var questionDb = new QuestionDB();
+            foreach (var q in allQuestions)
+            {
+                var question = new Question
+                    {
+                        TeacherID = teacherId,
+                        QuestionText = q.QuestionText,
+                        TopicName = finalTopicId.ToString(),
+                        CreatedAt = DateTime.Now
+                    };
+
+                await questionDb.InsertQuestionWithAnswersAsync(question, q.Answers);
+            }
+
+            currentStep = 3;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error publishing quiz: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void CreateAnother()
+    {
+        allQuestions.Clear();
+        currentQuestion = new QuizQuestion { TeacherID = teacherId };
+        questionHint = "";
+        InitializeAnswers();
+        currentStep = 1;
+        selectedSubjectId = 0;
+        selectedTopicId = 0;
+        isCustomSubject = false;
+        isCustomTopic = false;
+        customSubject = "";
+        customTopic = "";
+        quizSubject = "";
+        quizTopic = "";
+    }
+
+    private void GoToDashboard()
+    {
+        nav.NavigateTo("/teacher-home");
+    }
+
+    private void CancelCreate()
+    {
+        nav.NavigateTo("/teacher-home");
+    }
+
+    private string GetSubjectName()
+    {
+        return string.IsNullOrEmpty(quizSubject) ? "-" : quizSubject;
+    }
+
+    private string GetTopicName()
+    {
+        return string.IsNullOrEmpty(quizTopic) ? "-" : quizTopic;
+    }
+
+    // Helper class for managing questions in memory
+    public class QuizQuestion
+    {
+        public int TeacherID { get; set; }
+        public string QuestionText { get; set; }
+        public string Hint { get; set; } = "";
+        public List<Answer> Answers { get; set; } = new List<Answer>();
+    }
+}

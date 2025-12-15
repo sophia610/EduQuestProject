@@ -11,8 +11,10 @@ namespace Models
         public int QuestionID { get; set; }
         public int TeacherID { get; set; }  // Foreign key to the teacher
         public string QuestionText { get; set; }
+        public string Hint { get; set; } 
         public string TopicName { get; set; }
         public DateTime CreatedAt { get; set; }
+        public List<Answer> Answers { get; set; } = new List<Answer>();
 
         public Question() { }
 

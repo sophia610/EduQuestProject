@@ -653,7 +653,7 @@
                 <span>👥</span>
                 <span>Students</span>
             </button>
-            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profile"))">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profileteacher"))">
                 <span>⚙️</span>
                 <span>Settings</span>
             </button>
@@ -699,7 +699,7 @@
             <div class="create-card">
                 <div class="create-content">
                     <h2>Create a new quiz</h2>
-                    <p>Build engaging quizzes for your students in minutes</p>
+                    <p>Build engaging quizzes for the students in minutes</p>
                 </div>
                 <button class="create-btn" @onclick="GoToCreateQuiz">
                     <span>➕</span>
@@ -853,16 +853,51 @@
 @code {
     private string teacherName = "";
     private List<Question> recentQuizzes;
+    private bool _initialized = false;
+    private bool _checkingSession = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var result = await session.GetAsync<Customers>("user");
-        if (result.Success && result.Value != null)
+        if (!firstRender || _initialized)
+            return;
+
+        _initialized = true;
+
+        try
         {
-            teacherName = result.Value.FullName;
-            await LoadRecentQuizzesAsync(result.Value.user_id);
+            var result = await session.GetAsync<Customers>("user");
+
+            if (result.Success && result.Value != null)
+            {
+                teacherName = result.Value.FullName;
+                await LoadRecentQuizzesAsync(result.Value.user_id);
+            }
+            else
+            {
+                // אל תנתב מיד – תני לשלב הבא לעבוד
+                _checkingSession = false;
+                StateHasChanged();
+                return;
+            }
         }
-        else
+        catch
+        {
+            _checkingSession = false;
+            StateHasChanged();
+            return;
+        }
+
+        _checkingSession = false;
+        StateHasChanged();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // אם עדיין טוען Session – לא עושים Redirect
+        if (_checkingSession) return;
+
+        // אם אין שם מורה אחרי טעינה → חזרה ללוגין
+        if (string.IsNullOrEmpty(teacherName))
         {
             nav.NavigateTo("/login");
         }
@@ -894,17 +929,8 @@
         return name[0].ToString().ToUpper();
     }
 
-    private int GetStudentCount()
-    {
-        // TODO: Implement actual student count from database
-        return 42;
-    }
-
-    private int GetCompletedCount()
-    {
-        // TODO: Implement actual completed count for today
-        return 18;
-    }
+    private int GetStudentCount() => 42;
+    private int GetCompletedCount() => 18;
 
     private int GetRandomStudentCount()
     {
