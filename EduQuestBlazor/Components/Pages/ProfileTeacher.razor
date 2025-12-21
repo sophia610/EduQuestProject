@@ -1,0 +1,907 @@
+﻿@page "/profile-teacher"
+@using Models
+@using DBL
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+@inject NavigationManager nav
+@inject IJSRuntime JSRuntime
+
+<PageTitle>EduQuest | Teacher Profile</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .dashboard {
+        display: flex;
+        height: 100vh;
+        background: #f5f7fa;
+    }
+
+    .sidebar {
+        width: 240px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding: 0 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        text-align: left;
+        font-weight: 500;
+    }
+
+    .sidebar-item:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .sidebar-item.active {
+        background: #eff6ff;
+        color: #3b82f6;
+        font-weight: 600;
+    }
+
+    .sidebar-item span:first-child {
+        font-size: 20px;
+    }
+
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 32px;
+    }
+
+    .header {
+        margin-bottom: 32px;
+    }
+
+    .greeting {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .greeting-sub {
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 24px;
+        max-width: 1400px;
+    }
+
+    .profile-sidebar-card {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        height: fit-content;
+    }
+
+    .avatar-section {
+        text-align: center;
+        margin-bottom: 28px;
+        padding-bottom: 28px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 48px;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        position: relative;
+    }
+
+    .teacher-crown {
+        position: absolute;
+        top: -5px;
+        right: 5px;
+        font-size: 32px;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .profile-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 6px;
+    }
+
+    .profile-email {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 16px;
+    }
+
+    .profile-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #eff6ff;
+        color: #3b82f6;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .stats-section {
+        margin-top: 24px;
+    }
+
+    .stats-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 16px;
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #3b82f6;
+    }
+
+    .achievements-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        margin-top: 24px;
+    }
+
+    .achievements-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .achievement-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .achievement-item {
+        background: #f9fafb;
+        padding: 16px;
+        border-radius: 10px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .achievement-item:hover {
+        background: #f3f4f6;
+        transform: translateY(-2px);
+    }
+
+    .achievement-emoji {
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+
+    .achievement-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group-full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        background: #f9fafb;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+    }
+
+    .preferences-section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 2px solid #f3f4f6;
+    }
+
+    .preferences-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 16px;
+    }
+
+    .preference-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px;
+        background: #f9fafb;
+        border-radius: 10px;
+        margin-bottom: 12px;
+    }
+
+    .preference-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .toggle-switch {
+        width: 48px;
+        height: 24px;
+        background: #d1d5db;
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .toggle-switch.active {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    }
+
+    .toggle-slider {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: transform 0.3s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch.active .toggle-slider {
+        transform: translateX(24px);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .message {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideIn 0.4s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-msg {
+        background: #f0fdf4;
+        border-left: 4px solid #10b981;
+        color: #16a34a;
+    }
+
+    .error-msg {
+        background: #fef2f2;
+        border-left: 4px solid #ef4444;
+        color: #dc2626;
+    }
+
+    .danger-zone {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 2px solid #fee2e2;
+    }
+
+    .danger-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .danger-icon {
+        width: 40px;
+        height: 40px;
+        background: #fee2e2;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #dc2626;
+        font-size: 20px;
+    }
+
+    .danger-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #dc2626;
+    }
+
+    .danger-description {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
+
+    .btn-danger {
+        background: #dc2626;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+    }
+
+    @@media (max-width: 1024px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            <div class="logo-text">EduQuest</div>
+        </div>
+        <div class="sidebar-menu">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/teacher-home"))">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/create-quiz"))">
+                <span>➕</span>
+                <span>Quick Create</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-quizzes"))">
+                <span>📚</span>
+                <span>My Quizzes</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/requests"))">
+                <span>📬</span>
+                <span>Requests</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/students"))">
+                <span>👥</span>
+                <span>Students</span>
+            </button>
+            <button class="sidebar-item active">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-container">
+        <div class="header">
+            <h1 class="greeting">Teacher Settings</h1>
+            <p class="greeting-sub">Manage your profile and teaching preferences</p>
+        </div>
+
+        <div class="profile-grid">
+            <div>
+                <div class="profile-sidebar-card">
+                    <div class="avatar-section">
+                        <div class="avatar-circle">
+                            <span class="teacher-crown">👑</span>
+                            @GetInitials()
+                        </div>
+                        <h2 class="profile-name">@teacher.FullName</h2>
+                        <p class="profile-email">@teacher.Email</p>
+                        <span class="profile-badge">
+                            <span>👨‍🏫</span>
+                            <span>Teacher Account</span>
+                        </span>
+                    </div>
+
+                    <div class="stats-section">
+                        <h3 class="stats-title">Teaching Stats</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Questions Created</span>
+                            <span class="stat-value">@questionCount</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Active Students</span>
+                            <span class="stat-value">156</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Member Since</span>
+                            <span class="stat-value">@teacher.CreatedAt.ToString("MMM yyyy")</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Account Status</span>
+                            <span class="stat-value">Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="achievements-card">
+                    <h3 class="achievements-title">
+                        <span>🏆</span>
+                        <span>Achievements</span>
+                    </h3>
+                    <div class="achievement-grid">
+                        <div class="achievement-item">
+                            <div class="achievement-emoji">🌟</div>
+                            <div class="achievement-label">Top Creator</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-emoji">🎯</div>
+                            <div class="achievement-label">Master</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-emoji">💎</div>
+                            <div class="achievement-label">Expert</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-emoji">🔥</div>
+                            <div class="achievement-label">30 Day Streak</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon">✏️</div>
+                        <h2 class="section-title">Edit Profile</h2>
+                    </div>
+
+                    <EditForm Model="@teacher" OnValidSubmit="@HandleUpdate">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <InputText @bind-Value="teacher.FullName"
+                                           class="form-input"
+                                           placeholder="Enter your full name" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <InputText @bind-Value="teacher.Email"
+                                           class="form-input"
+                                           placeholder="your@email.com" />
+                            </div>
+
+                            <div class="form-group-full">
+                                <label class="form-label">New Password (leave blank to keep current)</label>
+                                <InputText @bind-Value="newPassword"
+                                           type="password"
+                                           class="form-input"
+                                           placeholder="Enter new password" />
+                            </div>
+                        </div>
+
+                        <div class="preferences-section">
+                            <h3 class="preferences-title">Teaching Preferences</h3>
+                            <div class="preference-item">
+                                <span class="preference-label">
+                                    <span>📧</span>
+                                    Email Notifications
+                                </span>
+                                <div class="toggle-switch active" @onclick="() => TogglePreference(0)">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                            <div class="preference-item">
+                                <span class="preference-label">
+                                    <span>🔔</span>
+                                    Student Alerts
+                                </span>
+                                <div class="toggle-switch active" @onclick="() => TogglePreference(1)">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                            <div class="preference-item">
+                                <span class="preference-label">
+                                    <span>📊</span>
+                                    Weekly Reports
+                                </span>
+                                <div class="toggle-switch" @onclick="() => TogglePreference(2)">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                                <span>@(isLoading ? "⏳" : "💾")</span>
+                                <span>@(isLoading ? "Saving..." : "Save Changes")</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="ResetForm">
+                                <span>🔄</span>
+                                <span>Reset</span>
+                            </button>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="message @messageClass">
+                                @message
+                            </div>
+                        }
+                    </EditForm>
+                </div>
+
+                <div class="danger-zone">
+                    <div class="danger-header">
+                        <div class="danger-icon">⚠️</div>
+                        <h2 class="danger-title">Delete Account</h2>
+                    </div>
+                    <p class="danger-description">
+                        <strong>Warning:</strong> Deleting your account will permanently remove all your created 
+                        questions (@questionCount total), student data, and teaching history. This action cannot be undone.
+                    </p>
+                    <button class="btn-danger" @onclick="HandleDeleteAccount">
+                        <span>🗑️</span>
+                        <span>Delete Teacher Account</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+@code {
+    private Customers teacher = new Customers();
+    private Customers originalTeacher = new Customers();
+    private CustomerDB db = new CustomerDB();
+    private QuestionDB questionDb = new QuestionDB();
+    private string message = string.Empty;
+    private string messageClass = string.Empty;
+    private bool isLoading = false;
+    private string newPassword = string.Empty;
+    private int questionCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await session.GetAsync<Customers>("user");
+        if (result.Success && result.Value != null)
+        {
+            teacher = result.Value;
+            
+            originalTeacher.user_id = teacher.user_id;
+            originalTeacher.FullName = teacher.FullName;
+            originalTeacher.Email = teacher.Email;
+            originalTeacher.Password = teacher.Password;
+            originalTeacher.Role = teacher.Role;
+            originalTeacher.CreatedAt = teacher.CreatedAt;
+
+            questionCount = await questionDb.GetQuestionCountAsync(teacher.user_id);
+        }
+        else
+        {
+            nav.NavigateTo("/login");
+        }
+    }
+
+    private string GetInitials()
+    {
+        if (string.IsNullOrWhiteSpace(teacher.FullName))
+            return "T";
+
+        var parts = teacher.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return parts[0][0].ToString().ToUpper();
+    }
+
+    private async Task HandleUpdate()
+    {
+        isLoading = true;
+        message = string.Empty;
+        StateHasChanged();
+
+        await Task.Delay(400);
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(teacher.FullName) || string.IsNullOrWhiteSpace(teacher.Email))
+            {
+                message = "Name and email are required fields.";
+                messageClass = "error-msg";
+                isLoading = false;
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(newPassword))
+            {
+                teacher.Password = newPassword;
+            }
+
+            var result = await db.UpdateAsync(teacher);
+
+            if (result > 0)
+            {
+                message = "✅ Profile updated successfully!";
+                messageClass = "success-msg";
+                newPassword = string.Empty;
+                
+                await session.SetAsync("user", teacher);
+                
+                originalTeacher.FullName = teacher.FullName;
+                originalTeacher.Email = teacher.Email;
+            }
+            else
+            {
+                message = "Failed to update profile. Please try again.";
+                messageClass = "error-msg";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+            messageClass = "error-msg";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        teacher.FullName = originalTeacher.FullName;
+        teacher.Email = originalTeacher.Email;
+        newPassword = string.Empty;
+        message = string.Empty;
+    }
+
+    private void TogglePreference(int index)
+    {
+        // Toggle preference logic here
+        StateHasChanged();
+    }
+
+    private async Task HandleDeleteAccount()
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+            "⚠️ CRITICAL WARNING ⚠️\n\nAre you absolutely certain you want to delete your teacher account?\n\nThis will permanently delete:\n• All your questions (" + questionCount + " total)\n• All student progress data\n• Your entire teaching history\n\nThis action is IRREVERSIBLE!\n\nAre you sure?");
+
+        if (confirmed)
+        {
+            try
+            {
+                await db.DeleteAsync(teacher.user_id);
+                await session.DeleteAsync("user");
+                nav.NavigateTo("/login");
+            }
+            catch (Exception ex)
+            {
+                message = $"Error deleting account: {ex.Message}";
+                messageClass = "error-msg";
+            }
+        }
+    }
+}

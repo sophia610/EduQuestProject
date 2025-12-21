@@ -14,58 +14,93 @@ namespace DBL
 
         protected override async Task<Question> CreateModelAsync(object[] row)
         {
+            // ✅ סדר העמודות בטבלה שלך: question_id, topic_id, teacher_id, question_text, hint, created_at
             Question q = new Question
             {
-                QuestionID = Convert.ToInt32(row[0]),
-                TeacherID = Convert.ToInt32(row[1]),
-                QuestionText = row[2]?.ToString(),
-                TopicName = row[3]?.ToString(),
-                CreatedAt = row.Length > 4 && row[4] != DBNull.Value && row[4] != null
-                    ? Convert.ToDateTime(row[4])
-                    : DateTime.Now  
+                QuestionID = Convert.ToInt32(row[0]),        // question_id
+                TopicName = row[1]?.ToString(),              // topic_id (נשמר כ-string)
+                TeacherID = Convert.ToInt32(row[2]),         // teacher_id
+                QuestionText = row[3]?.ToString(),           // question_text
+                Hint = row.Length > 4 && row[4] != DBNull.Value ? row[4].ToString() : "", // hint
+                CreatedAt = row.Length > 5 && row[5] != DBNull.Value && row[5] != null
+                    ? Convert.ToDateTime(row[5])             // created_at
+                    : DateTime.Now
             };
             return q;
         }
 
-        // הוספת שאלה חדשה עם תשובות
+        // ✅ הוספת שאלה חדשה עם תשובות
         public async Task<Question> InsertQuestionWithAnswersAsync(Question question, List<Answer> answers)
         {
-            Dictionary<string, object> questionValues = new()
-    {
-        { "teacher_id", question.TeacherID },
-        { "question_text", question.QuestionText },
-        { "topic_id", int.Parse(question.TopicName) }, // ⬅️ חשוב! המרה ל-int
-        { "hint", question.Hint ?? "" },
-        { "created_at", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") } // ⬅️ פורמט נכון
-    };
-
-            var insertedQuestion = await base.InsertGetObjAsync(questionValues);
-
-            if (insertedQuestion != null && answers != null && answers.Count > 0)
+            try
             {
-                var answerDb = new AnswerDB();
-                foreach (var answer in answers)
+                // המרה נכונה של topic_id
+                int topicId;
+                if (!int.TryParse(question.TopicName, out topicId))
                 {
-                    answer.QuestionId = insertedQuestion.QuestionID;
-                    await answerDb.InsertAnswerAsync(answer);
+                    throw new Exception("Topic ID must be a valid integer");
                 }
+
+                Dictionary<string, object> questionValues = new()
+                {
+                    { "teacher_id", question.TeacherID },
+                    { "question_text", question.QuestionText },
+                    { "topic_id", topicId },
+                    { "hint", question.Hint ?? "" },
+                    { "created_at", DateTime.Now }
+                };
+
+                var insertedQuestion = await base.InsertGetObjAsync(questionValues);
+
+                if (insertedQuestion != null && answers != null && answers.Count > 0)
+                {
+                    var answerDb = new AnswerDB();
+                    foreach (var answer in answers)
+                    {
+                        answer.QuestionId = insertedQuestion.QuestionID;
+                        await answerDb.InsertAnswerAsync(answer);
+                    }
+
+                    // ✅ טעינת התשובות למודל שנשמר
+                    insertedQuestion.Answers = answers;
+                }
+
+                return insertedQuestion;
             }
-            
-            return insertedQuestion;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in InsertQuestionWithAnswersAsync: {ex.Message}");
+                throw;
+            }
         }
 
         // הוספת שאלה פשוטה
         public async Task<Question> InsertQuestionAsync(Question question)
         {
-            Dictionary<string, object> values = new()
+            try
             {
-                { "teacher_id", question.TeacherID },
-                { "question_text", question.QuestionText },
-                { "topic_id", question.TopicName },
-                { "hint", "" },
-                { "created_at", DateTime.Now }
-            };
-            return await base.InsertGetObjAsync(values);
+                int topicId;
+                if (!int.TryParse(question.TopicName, out topicId))
+                {
+                    throw new Exception("Topic ID must be a valid integer");
+                }
+
+                Dictionary<string, object> values = new()
+                {
+                    { "teacher_id", question.TeacherID },
+                    { "question_text", question.QuestionText },
+                    { "topic_id", topicId },
+                    { "hint", question.Hint ?? "" },
+                    { "created_at", DateTime.Now }
+                };
+
+                return await base.InsertGetObjAsync(values);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in InsertQuestionAsync: {ex.Message}");
+                throw;
+            }
         }
 
         // שליפת שאלות אחרונות של מורה
@@ -77,24 +112,22 @@ namespace DBL
             };
 
             var results = await SelectAllAsync(filter);
-
-            // Sort by created_at DESC and take top 10
             results.Sort((a, b) => b.CreatedAt.CompareTo(a.CreatedAt));
             return results.Take(10).ToList();
         }
 
-        // שליפת כל השאלות (לתלמידים)
+        // שליפת כל השאלות
         public async Task<List<Question>> GetAllQuestionsAsync()
         {
             return await SelectAllAsync();
         }
 
         // שליפת שאלות לפי נושא
-        public async Task<List<Question>> GetQuestionsByTopicAsync(string topicName)
+        public async Task<List<Question>> GetQuestionsByTopicAsync(int topicId)
         {
             Dictionary<string, object> filter = new()
             {
-                { "topic_name", topicName }
+                { "topic_id", topicId }
             };
             return await SelectAllAsync(filter);
         }
@@ -111,8 +144,6 @@ namespace DBL
             if (results.Count == 0) return null;
 
             var question = results[0];
-
-            // Get answers for this question
             var answerDb = new AnswerDB();
             question.Answers = await answerDb.GetAnswersByQuestionIdAsync(questionId);
 
@@ -133,25 +164,47 @@ namespace DBL
         // מחיקת שאלה
         public async Task<int> DeleteQuestionAsync(int questionId)
         {
-            Dictionary<string, object> filter = new()
+            try
             {
-                { "question_id", questionId }
-            };
-            return await base.DeleteAsync(filter);
+                // ✅ מחיקת תשובות קודם
+                var answerDb = new AnswerDB();
+                await answerDb.DeleteAnswersByQuestionIdAsync(questionId);
+
+                // מחיקת השאלה
+                Dictionary<string, object> filter = new()
+                {
+                    { "question_id", questionId }
+                };
+                return await base.DeleteAsync(filter);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in DeleteQuestionAsync: {ex.Message}");
+                throw;
+            }
         }
 
         // עדכון שאלה
         public async Task<int> UpdateQuestionAsync(Question question)
         {
+            int topicId;
+            if (!int.TryParse(question.TopicName, out topicId))
+            {
+                throw new Exception("Topic ID must be a valid integer");
+            }
+
             Dictionary<string, object> values = new()
             {
-                { "topic_id", question.TopicName },
-                { "question_text", question.QuestionText }
+                { "topic_id", topicId },
+                { "question_text", question.QuestionText },
+                { "hint", question.Hint ?? "" }
             };
+
             Dictionary<string, object> filter = new()
             {
                 { "question_id", question.QuestionID }
             };
+
             return await base.UpdateAsync(values, filter);
         }
 

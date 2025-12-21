@@ -20,23 +20,32 @@ namespace DBL
                 AnswerId = Convert.ToInt32(row[0]),
                 QuestionId = Convert.ToInt32(row[1]),
                 AnswerText = row[2]?.ToString(),
-                IsCorrect = Convert.ToBoolean(row[3]),
+                IsCorrect = Convert.ToBoolean(row[3]), // ✅ MySQL TINYINT(1) מומר אוטומטית ל-bool
                 Explanation = row[4]?.ToString()
             };
             return a;
         }
 
-        // הוספת תשובה
+        // ✅ הוספת תשובה - תיקון מלא
         public async Task<Answer> InsertAnswerAsync(Answer answer)
         {
-            Dictionary<string, object> values = new()
+            try
             {
-                { "question_id", answer.QuestionId },
-                { "answer_text", answer.AnswerText },
-                { "is_correct", answer.IsCorrect },
-                { "explanation", answer.Explanation ?? "" }
-            };
-            return await base.InsertGetObjAsync(values);
+                Dictionary<string, object> values = new()
+                {
+                    { "question_id", answer.QuestionId },
+                    { "answer_text", answer.AnswerText },
+                    { "is_correct", answer.IsCorrect ? 1 : 0 }, // ✅ המרה מפורשת ל-TINYINT(1)
+                    { "explanation", answer.Explanation ?? "" }
+                };
+
+                return await base.InsertGetObjAsync(values);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in InsertAnswerAsync: {ex.Message}");
+                throw;
+            }
         }
 
         // שליפת תשובות לשאלה
@@ -59,24 +68,41 @@ namespace DBL
             return await base.DeleteAsync(filter);
         }
 
-        // עדכון תשובה
+        // ✅ עדכון תשובה
         public async Task<int> UpdateAnswerAsync(Answer answer)
         {
-            Dictionary<string, object> values = new()
+            try
             {
-                { "answer_text", answer.AnswerText },
-                { "is_correct", answer.IsCorrect },
-                { "explanation", answer.Explanation }
-            };
+                Dictionary<string, object> values = new()
+                {
+                    { "answer_text", answer.AnswerText },
+                    { "is_correct", answer.IsCorrect ? 1 : 0 }, // ✅ המרה מפורשת
+                    { "explanation", answer.Explanation ?? "" }
+                };
+
+                Dictionary<string, object> filter = new()
+                {
+                    { "answer_id", answer.AnswerId }
+                };
+
+                return await base.UpdateAsync(values, filter);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in UpdateAnswerAsync: {ex.Message}");
+                throw;
+            }
+        }
+
+        // ✅ מחיקת כל התשובות של שאלה
+        public async Task<int> DeleteAnswersByQuestionIdAsync(int questionId)
+        {
             Dictionary<string, object> filter = new()
             {
-                { "answer_id", answer.AnswerId }
+                { "question_id", questionId }
             };
-            return await base.UpdateAsync(values, filter);
+            return await base.DeleteAsync(filter);
         }
-       
-
     }
 }
-
 

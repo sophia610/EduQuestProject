@@ -910,28 +910,27 @@
                             <div class="summary-label">Topic</div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary
-<div class="summary-value">4</div>
-                                <div class="summary-label">Answers Each</div>
-                            </div>
+                            <div class="summary-value">4</div>
+                            <div class="summary-label">Answers Each</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <div class="section-header">
+                        <div class="section-icon">📋</div>
+                        <div>
+                            <h2 class="section-title">Review All Questions</h2>
+                            <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Review your questions before publishing</p>
                         </div>
                     </div>
 
-                    <div class="form-card">
-                        <div class="section-header">
-                            <div class="section-icon">📋</div>
-                            <div>
-                                <h2 class="section-title">Review All Questions</h2>
-                                <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Review your questions before publishing</p>
-                            </div>
-                        </div>
-
                     @if (allQuestions.Count == 0)
                     {
-                            <div class="empty-state">
-                                <div class="empty-icon">📝</div>
-                                <p>No questions added yet</p>
-                            </div>
+                        <div class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <p>No questions added yet</p>
+                        </div>
                     }
                     else
                     {
@@ -939,106 +938,107 @@
                         {
                             var qIndex = i;
                             var q = allQuestions[qIndex];
-                                <div class="question-card">
-                                    <div class="question-number">Question @(qIndex + 1)</div>
-                                    <div class="question-actions">
-                                        <button type="button" class="icon-btn edit" @onclick="@(() => EditQuestion(qIndex))">✏️</button>
-                                        <button type="button" class="icon-btn delete" @onclick="@(() => DeleteQuestion(qIndex))">🗑️</button>
-                                    </div>
-                                    <div class="question-content">
-                                        <div class="question-text">@q.QuestionText</div>
+                            <div class="question-card">
+                                <div class="question-number">Question @(qIndex + 1)</div>
+                                <div class="question-actions">
+                                    <button type="button" class="icon-btn edit" @onclick="@(() => EditQuestion(qIndex))">✏️</button>
+                                    <button type="button" class="icon-btn delete" @onclick="@(() => DeleteQuestion(qIndex))">🗑️</button>
+                                </div>
+                                <div class="question-content">
+                                    <div class="question-text">@q.QuestionText</div>
                                     @if (!string.IsNullOrEmpty(q.Hint))
                                     {
-                                            <div class="question-meta">
-                                                <span>💡 Hint: @q.Hint</span>
-                                            </div>
+                                        <div class="question-meta">
+                                            <span>💡 Hint: @q.Hint</span>
+                                        </div>
                                     }
-                                        <div class="question-answers">
+                                    <div class="question-answers">
                                         @foreach (var ans in q.Answers)
                                         {
-                                                <div class="mini-answer @(ans.IsCorrect ? "correct" : "")">
+                                            <div class="mini-answer @(ans.IsCorrect ? "correct" : "")">
                                                 @ans.AnswerText
                                                 @if (ans.IsCorrect)
                                                 {
-                                                        <span> ✓</span>
+                                                    <span> ✓</span>
                                                 }
-                                                </div>
+                                            </div>
                                         }
-                                        </div>
                                     </div>
                                 </div>
+                            </div>
                         }
                     }
 
-                        <button type="button" class="add-question-btn" @onclick="AddAnotherQuestion">
-                            <span style="font-size: 24px;">➕</span>
-                            <span>Add Another Question</span>
-                        </button>
-                    </div>
+                    <button type="button" class="add-question-btn" @onclick="AddAnotherQuestion">
+                        <span style="font-size: 24px;">➕</span>
+                        <span>Add Another Question</span>
+                    </button>
+                </div>
 
-                    <!-- Review Actions -->
-                    <div class="actions">
-                        <button type="button" class="btn btn-secondary" @onclick="BackToEdit">
-                            <span>←</span>
-                            <span>Back to Edit</span>
-                        </button>
-                        <button type="button" class="btn btn-success" @onclick="PublishQuiz" disabled="@(isLoading || allQuestions.Count == 0)">
-                            <span>🚀</span>
-                            <span>@(isLoading ? "Publishing..." : "Publish Quiz")</span>
-                        </button>
-                    </div>
+                <!-- Review Actions -->
+                <div class="actions">
+                    <button type="button" class="btn btn-secondary" @onclick="BackToEdit">
+                        <span>←</span>
+                        <span>Back to Edit</span>
+                    </button>
+                    <button type="button" class="btn btn-success" @onclick="PublishQuiz" disabled="@(isLoading || allQuestions.Count == 0)">
+                        <span>🚀</span>
+                        <span>@(isLoading ? "Publishing..." : "Publish Quiz")</span>
+                    </button>
+                </div>
             }
             else if (currentStep == 3)
             {
-                    <!-- Step 3: Success -->
-                    <div class="form-card" style="text-align: center; padding: 60px 40px;">
-                        <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
-                        <h2 style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 16px;">Quiz Published Successfully!</h2>
-                        <p style="font-size: 18px; color: #6b7280; margin-bottom: 32px;">Your quiz with @allQuestions.Count questions is now live for students!</p>
-                        <div class="actions" style="max-width: 500px; margin: 0 auto;">
-                            <button type="button" class="btn btn-secondary" @onclick="CreateAnother">
-                                <span>➕</span>
-                                <span>Create Another</span>
-                            </button>
-                            <button type="button" class="btn btn-primary" @onclick="GoToDashboard">
-                                <span>🏠</span>
-                                <span>Go to Dashboard</span>
-                            </button>
-                        </div>
+                <!-- Step 3: Success -->
+                <div class="form-card" style="text-align: center; padding: 60px 40px;">
+                    <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
+                    <h2 style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 16px;">Quiz Published Successfully!</h2>
+                    <p style="font-size: 18px; color: #6b7280; margin-bottom: 32px;">Your quiz with @allQuestions.Count questions is now live for students!</p>
+                    <div class="actions" style="max-width: 500px; margin: 0 auto;">
+                        <button type="button" class="btn btn-secondary" @onclick="CreateAnother">
+                            <span>➕</span>
+                            <span>Create Another</span>
+                        </button>
+                        <button type="button" class="btn btn-primary" @onclick="GoToDashboard">
+                            <span>🏠</span>
+                            <span>Go to Dashboard</span>
+                        </button>
                     </div>
+                </div>
             }
-            </div>
+        </div>
     </main>
 </div>
-
 @code {
-    // Current question being edited
+    // ✅ נתוני שאלה נוכחית
     private QuizQuestion currentQuestion = new QuizQuestion();
     private List<Answer> currentAnswers = new List<Answer>();
     private string questionHint = "";
 
-    // All questions in the quiz
+    // ✅ כל השאלות בחידון
     private List<QuizQuestion> allQuestions = new List<QuizQuestion>();
 
-    // Subject & Topic
+    // ✅ Subject & Topic
     private List<Subject> allSubjects = new List<Subject>();
     private List<Topic> allTopics = new List<Topic>();
     private List<Topic> filteredTopics = new List<Topic>();
     private int selectedSubjectId = 0;
     private int selectedTopicId = 0;
 
-    // Custom Subject & Topic
+    // ✅ Custom Subject & Topic
     private bool isCustomSubject = false;
     private bool isCustomTopic = false;
     private string customSubject = "";
     private string customTopic = "";
 
-    // Saved Subject & Topic for the quiz
+    // ✅ Subject & Topic שמורים
+    private int savedSubjectId = 0;
+    private int savedTopicId = 0;
     private string quizSubject = "";
     private string quizTopic = "";
 
-    // UI State
-    private int currentStep = 1; // 1=Create, 2=Review, 3=Success
+    // ✅ UI State
+    private int currentStep = 1;
     private string successMessage = "";
     private string errorMessage = "";
     private bool isLoading = false;
@@ -1152,14 +1152,16 @@
         StateHasChanged();
     }
 
+    // ✅ הוספת שאלה חדשה - עם שמירה מיידית למסד נתונים!
     private async Task HandleAddQuestion()
     {
         errorMessage = "";
+        successMessage = "";
         isLoading = true;
 
         try
         {
-            // Validation
+            // ✅ בדיקות תקינות
             if (!isCustomSubject && selectedSubjectId == 0)
             {
                 errorMessage = "Please select or enter a subject.";
@@ -1212,44 +1214,102 @@
                 return;
             }
 
-            // Save Subject & Topic for the entire quiz (first question sets it)
+            // ✅ שמירת Subject & Topic (בשאלה הראשונה בלבד)
             if (allQuestions.Count == 0)
             {
-                quizSubject = isCustomSubject ? customSubject : allSubjects.FirstOrDefault(s => s.subject_id == selectedSubjectId)?.subject_name ?? "";
-                quizTopic = isCustomTopic ? customTopic : allTopics.FirstOrDefault(t => t.topic_id == selectedTopicId)?.topic_name ?? "";
+                if (isCustomSubject)
+                {
+                    var subjectDb = new SubjectDB();
+                    var newSubject = new Subject { subject_name = customSubject };
+                    await subjectDb.InsertSubjectAsync(newSubject);
+                    allSubjects = await subjectDb.GetAllSubjectsAsync();
+                    savedSubjectId = allSubjects.FirstOrDefault(s => s.subject_name == customSubject)?.subject_id ?? 0;
+                    quizSubject = customSubject;
+                }
+                else
+                {
+                    savedSubjectId = selectedSubjectId;
+                    quizSubject = allSubjects.FirstOrDefault(s => s.subject_id == selectedSubjectId)?.subject_name ?? "";
+                }
+
+                if (isCustomTopic)
+                {
+                    var topicDb = new TopicDB();
+                    var newTopic = new Topic
+                        {
+                            subject_id = savedSubjectId,
+                            topic_name = customTopic
+                        };
+                    await topicDb.InsertTopicAsync(newTopic);
+                    allTopics = await topicDb.GetAllTopicsAsync();
+                    savedTopicId = allTopics.FirstOrDefault(t => t.topic_name == customTopic && t.subject_id == savedSubjectId)?.topic_id ?? 0;
+                    quizTopic = customTopic;
+                }
+                else
+                {
+                    savedTopicId = selectedTopicId;
+                    quizTopic = allTopics.FirstOrDefault(t => t.topic_id == selectedTopicId)?.topic_name ?? "";
+                }
             }
 
-            // Add question to list
-            var newQ = new QuizQuestion
+            // ✅ שמירה מיידית למסד נתונים!
+            var question = new Question
                 {
+                    TeacherID = teacherId,
                     QuestionText = currentQuestion.QuestionText,
+                    TopicName = savedTopicId.ToString(),
                     Hint = questionHint,
-                    Answers = new List<Answer>(currentAnswers.Select(a => new Answer
-                    {
-                        AnswerText = a.AnswerText,
-                        IsCorrect = a.IsCorrect,
-                        Explanation = a.Explanation
-                    }))
+                    CreatedAt = DateTime.Now
                 };
 
-            allQuestions.Add(newQ);
+            var answers = currentAnswers.Select(a => new Answer
+                {
+                    AnswerText = a.AnswerText,
+                    IsCorrect = a.IsCorrect,
+                    Explanation = a.Explanation ?? ""
+                }).ToList();
 
-            // Reset form
-            currentQuestion = new QuizQuestion { TeacherID = teacherId };
-            questionHint = "";
-            InitializeAnswers();
+            var questionDb = new QuestionDB();
+            var savedQuestion = await questionDb.InsertQuestionWithAnswersAsync(question, answers);
 
-            successMessage = $"Question {allQuestions.Count} added successfully!";
-            await Task.Delay(1500);
-            successMessage = "";
+            if (savedQuestion != null)
+            {
+                // ✅ שמירה גם ברשימה המקומית
+                var newQ = new QuizQuestion
+                    {
+                        QuestionID = savedQuestion.QuestionID,
+                        TeacherID = teacherId,
+                        QuestionText = savedQuestion.QuestionText,
+                        Hint = questionHint,
+                        TopicId = savedTopicId,
+                        Answers = new List<Answer>(answers)
+                    };
+
+                allQuestions.Add(newQ);
+
+                // ✅ איפוס טופס
+                currentQuestion = new QuizQuestion { TeacherID = teacherId };
+                questionHint = "";
+                InitializeAnswers();
+
+                successMessage = $"✅ Question {allQuestions.Count} saved successfully to database!";
+                await Task.Delay(2000);
+                successMessage = "";
+            }
+            else
+            {
+                errorMessage = "Failed to save question to database.";
+            }
         }
         catch (Exception ex)
         {
             errorMessage = $"Error: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"HandleAddQuestion Error: {ex}");
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
     }
 
@@ -1274,27 +1334,63 @@
         currentStep = 1;
     }
 
-    private void EditQuestion(int index)
+    // ✅ עריכת שאלה - מחיקה מהמסד ושמירה מחדש
+    private async Task EditQuestion(int index)
     {
-        // Load question for editing
-        var q = allQuestions[index];
-        currentQuestion.QuestionText = q.QuestionText;
-        questionHint = q.Hint;
-        currentAnswers = new List<Answer>(q.Answers);
+        try
+        {
+            var q = allQuestions[index];
 
-        // Remove from list (will be re-added when saved)
-        allQuestions.RemoveAt(index);
-        currentStep = 1;
-        successMessage = "Question loaded for editing";
+            // ✅ מחיקת השאלה ממסד הנתונים
+            if (q.QuestionID > 0)
+            {
+                var questionDb = new QuestionDB();
+                await questionDb.DeleteQuestionAsync(q.QuestionID);
+            }
+
+            // טעינת הנתונים לעריכה
+            currentQuestion.QuestionText = q.QuestionText;
+            questionHint = q.Hint;
+            currentAnswers = new List<Answer>(q.Answers);
+
+            allQuestions.RemoveAt(index);
+            currentStep = 1;
+            successMessage = "Question loaded for editing (deleted from database)";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error editing question: {ex.Message}";
+        }
     }
 
-    private void DeleteQuestion(int index)
+    // ✅ מחיקת שאלה - גם מהמסד נתונים
+    private async Task DeleteQuestion(int index)
     {
-        allQuestions.RemoveAt(index);
-        successMessage = "Question deleted";
-        StateHasChanged();
+        try
+        {
+            var q = allQuestions[index];
+
+            // ✅ מחיקה ממסד הנתונים
+            if (q.QuestionID > 0)
+            {
+                var questionDb = new QuestionDB();
+                await questionDb.DeleteQuestionAsync(q.QuestionID);
+            }
+
+            allQuestions.RemoveAt(index);
+            successMessage = "✅ Question deleted from database";
+            await Task.Delay(2000);
+            successMessage = "";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting question: {ex.Message}";
+        }
     }
 
+    // ✅ פרסום חידון - כבר נשמר!
     private async Task PublishQuiz()
     {
         errorMessage = "";
@@ -1309,56 +1405,13 @@
                 return;
             }
 
-            // Create or get Subject ID
-            int finalSubjectId = selectedSubjectId;
-            if (isCustomSubject && !string.IsNullOrWhiteSpace(customSubject))
-            {
-                var subjectDb = new SubjectDB();
-                var newSubject = new Subject { subject_name = customSubject };
-                await subjectDb.InsertSubjectAsync(newSubject);
-
-                // Reload subjects to get the new ID
-                allSubjects = await subjectDb.GetAllSubjectsAsync();
-                finalSubjectId = allSubjects.FirstOrDefault(s => s.subject_name == customSubject)?.subject_id ?? 0;
-            }
-
-            // Create or get Topic ID
-            int finalTopicId = selectedTopicId;
-            if (isCustomTopic && !string.IsNullOrWhiteSpace(customTopic))
-            {
-                var topicDb = new TopicDB();
-                var newTopic = new Topic
-                    {
-                        subject_id = finalSubjectId,
-                        topic_name = customTopic
-                    };
-                await topicDb.InsertTopicAsync(newTopic);
-
-                // Reload topics to get the new ID
-                allTopics = await topicDb.GetAllTopicsAsync();
-                finalTopicId = allTopics.FirstOrDefault(t => t.topic_name == customTopic && t.subject_id == finalSubjectId)?.topic_id ?? 0;
-            }
-
-            // Save all questions
-            var questionDb = new QuestionDB();
-            foreach (var q in allQuestions)
-            {
-                var question = new Question
-                    {
-                        TeacherID = teacherId,
-                        QuestionText = q.QuestionText,
-                        TopicName = finalTopicId.ToString(),
-                        CreatedAt = DateTime.Now
-                    };
-
-                await questionDb.InsertQuestionWithAnswersAsync(question, q.Answers);
-            }
-
+            // ✅ השאלות כבר נשמרו במסד הנתונים!
             currentStep = 3;
+            successMessage = $"🎉 Quiz with {allQuestions.Count} questions published successfully!";
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error publishing quiz: {ex.Message}";
+            errorMessage = $"Error: {ex.Message}";
         }
         finally
         {
@@ -1375,12 +1428,16 @@
         currentStep = 1;
         selectedSubjectId = 0;
         selectedTopicId = 0;
+        savedSubjectId = 0;
+        savedTopicId = 0;
         isCustomSubject = false;
         isCustomTopic = false;
         customSubject = "";
         customTopic = "";
         quizSubject = "";
         quizTopic = "";
+        successMessage = "";
+        errorMessage = "";
     }
 
     private void GoToDashboard()
@@ -1403,12 +1460,14 @@
         return string.IsNullOrEmpty(quizTopic) ? "-" : quizTopic;
     }
 
-    // Helper class for managing questions in memory
+    // ✅ Helper class - עם QuestionID
     public class QuizQuestion
     {
+        public int QuestionID { get; set; } // ✅ מזהה מהמסד נתונים
         public int TeacherID { get; set; }
         public string QuestionText { get; set; }
         public string Hint { get; set; } = "";
+        public int TopicId { get; set; }
         public List<Answer> Answers { get; set; } = new List<Answer>();
     }
 }
