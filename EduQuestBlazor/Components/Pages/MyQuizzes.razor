@@ -832,8 +832,8 @@
 }
 
 @code {
-    private List<Question> allQuestions;
-    private List<Question> filteredQuestions;
+    private List<Quiz> allQuizzes;
+    private List<Quiz> filteredQuizzes;
     private List<string> subjects = new List<string>();
     private List<string> topics = new List<string>();
 
@@ -887,79 +887,25 @@
 
     private async Task LoadQuizzes()
     {
-        isLoading = true;
-        System.Diagnostics.Debug.WriteLine($"🔄 Starting LoadQuizzes for teacher {teacherId}...");
-
         try
         {
-            var questionDb = new QuestionDB();
+            var quizDb = new QuizDB();
+            allQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
 
-            // ✅ Get all questions for this teacher
-            var allDbQuestions = await questionDb.GetAllQuestionsAsync();
-            System.Diagnostics.Debug.WriteLine($"📊 Total questions in DB: {allDbQuestions?.Count ?? 0}");
+            totalQuizzes = allQuizzes.Count;
 
-            allQuestions = allDbQuestions
-                .Where(q => q.TeacherID == teacherId)
-                .OrderByDescending(q => q.CreatedAt)
+            // חישוב סטטיסטיקות
+            subjects = allQuizzes
+                .Select(q => GetSubjectName(q.SubjectId))
+                .Distinct()
+                .OrderBy(s => s)
                 .ToList();
 
-            System.Diagnostics.Debug.WriteLine($"✅ Questions for teacher {teacherId}: {allQuestions.Count}");
-
-            totalQuizzes = allQuestions.Count;
-
-            if (allQuestions.Count == 0)
-            {
-                // No questions found - finish loading
-                filteredQuestions = new List<Question>();
-                isLoading = false;
-                System.Diagnostics.Debug.WriteLine("⚠️ No questions found for this teacher");
-                return;
-            }
-
-            // ✅ Extract unique subjects and topics
-            var topicDb = new TopicDB();
-            var allTopics = await topicDb.GetAllTopicsAsync();
-
-            var subjectDb = new SubjectDB();
-            var allSubjects = await subjectDb.GetAllSubjectsAsync();
-
-            System.Diagnostics.Debug.WriteLine($"📚 Loaded {allTopics.Count} topics and {allSubjects.Count} subjects");
-
-            // Get unique subjects
-            var subjectSet = new HashSet<string>();
-            foreach (var q in allQuestions)
-            {
-                var subjectName = GetSubjectNameFromTopicId(q.TopicName, allTopics, allSubjects);
-                if (!string.IsNullOrEmpty(subjectName))
-                {
-                    subjectSet.Add(subjectName);
-                }
-            }
-            subjects = subjectSet.OrderBy(s => s).ToList();
-
-            // Get unique topics
-            var topicSet = new HashSet<string>();
-            foreach (var q in allQuestions)
-            {
-                var topicName = GetTopicNameFromId(q.TopicName, allTopics);
-                if (!string.IsNullOrEmpty(topicName) && topicName != "Unknown" && topicName != "Unknown Topic")
-                {
-                    topicSet.Add(topicName);
-                }
-            }
-            topics = topicSet.OrderBy(t => t).ToList();
-
-            filteredQuestions = allQuestions;
-            System.Diagnostics.Debug.WriteLine($"✅ LoadQuizzes completed successfully");
+            filteredQuizzes = allQuizzes;
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading quizzes: {ex.Message}";
-            System.Diagnostics.Debug.WriteLine($"❌ LoadQuizzes Error: {ex}");
-        }
-        finally
-        {
-            isLoading = false;
+            errorMessage = $"Error: {ex.Message}";
         }
     }
 
@@ -977,34 +923,20 @@
 
     private void FilterQuizzes()
     {
-        if (allQuestions == null || allQuestions.Count == 0)
+        filteredQuizzes = allQuizzes.Where(q =>
         {
-            filteredQuestions = new List<Question>();
-            return;
-        }
-
-        filteredQuestions = allQuestions.Where(q =>
-        {
-            // Load topics and subjects for filtering
-            var topicDb = new TopicDB();
-            var allTopics = topicDb.GetAllTopicsAsync().Result;
-
-            var subjectDb = new SubjectDB();
-            var allSubjects = subjectDb.GetAllSubjectsAsync().Result;
-
             bool matchesSubject = string.IsNullOrEmpty(selectedSubject) ||
-                GetSubjectNameFromTopicId(q.TopicName, allTopics, allSubjects).Equals(selectedSubject, StringComparison.OrdinalIgnoreCase);
+                GetSubjectName(q.SubjectId).Equals(selectedSubject, StringComparison.OrdinalIgnoreCase);
 
             bool matchesTopic = string.IsNullOrEmpty(selectedTopic) ||
-                GetTopicNameFromId(q.TopicName, allTopics).Equals(selectedTopic, StringComparison.OrdinalIgnoreCase);
+                GetTopicName(q.TopicId).Equals(selectedTopic, StringComparison.OrdinalIgnoreCase);
 
             bool matchesSearch = string.IsNullOrEmpty(searchQuery) ||
-                q.QuestionText.Contains(searchQuery, StringComparison.OrdinalIgnoreCase);
+                q.QuizName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                q.Questions.Any(question => question.QuestionText.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
 
             return matchesSubject && matchesTopic && matchesSearch;
         }).ToList();
-
-        StateHasChanged();
     }
 
     private void OnSearchInput(ChangeEventArgs e)
