@@ -218,5 +218,23 @@ namespace DBL
             var results = await SelectAllAsync(filter);
             return results.Count;
         }
+        public async Task<List<Question>> GetQuestionsByQuizIdAsync(int quizId)
+        {
+            Dictionary<string, object> filter = new()
+    {
+        { "quiz_id", quizId }
+    };
+
+            var questions = await SelectAllAsync(filter);
+
+            // טעינת תשובות לכל שאלה
+            var answerDb = new AnswerDB();
+            foreach (var q in questions)
+            {
+                q.Answers = await answerDb.GetAnswersByQuestionIdAsync(q.QuestionID);
+            }
+
+            return questions;
+        }
     }
 }

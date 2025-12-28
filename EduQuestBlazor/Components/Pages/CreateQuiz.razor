@@ -1044,6 +1044,10 @@
     private bool isLoading = false;
     private int teacherId = 0;
 
+    private int currentQuizId = 0; 
+    private string quizName = ""; 
+    private string quizDescription = "";
+
     protected override async Task OnInitializedAsync()
     {
         var result = await session.GetAsync<Customers>("user");
@@ -1072,6 +1076,40 @@
         }
 
         InitializeAnswers();
+        if (allQuestions.Count == 0)
+        {
+            await CreateNewQuizAsync();
+        }
+    }
+    private async Task CreateNewQuizAsync()
+    {
+        try
+        {
+            var quiz = new Quiz
+                {
+                    TeacherId = teacherId,
+                    QuizName = string.IsNullOrEmpty(quizName) ? $"Quiz {DateTime.Now:dd/MM/yyyy HH:mm}" : quizName,
+                    Description = quizDescription,
+                    SubjectId = savedSubjectId,
+                    TopicId = savedTopicId,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true
+                };
+
+            var quizDb = new QuizDB();
+            var createdQuiz = await quizDb.CreateQuizAsync(quiz);
+
+            if (createdQuiz != null)
+            {
+                currentQuizId = createdQuiz.QuizId;
+                System.Diagnostics.Debug.WriteLine($"✅ Created new quiz ID: {currentQuizId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating quiz: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"❌ CreateNewQuizAsync Error: {ex}");
+        }
     }
 
     private void InitializeAnswers()
@@ -1250,11 +1288,22 @@
                     savedTopicId = selectedTopicId;
                     quizTopic = allTopics.FirstOrDefault(t => t.topic_id == selectedTopicId)?.topic_name ?? "";
                 }
+
+                // ✅ יצירת חידון חדש אחרי שמירת Subject & Topic
+                await CreateNewQuizAsync();
+
+                if (currentQuizId == 0)
+                {
+                    errorMessage = "Failed to create quiz. Cannot add questions.";
+                    isLoading = false;
+                    return;
+                }
             }
 
-            // ✅ שמירה מיידית למסד נתונים!
+            // ✅ שמירה מיידית למסד נתונים עם quiz_id!
             var question = new Question
                 {
+                    QuizId = currentQuizId, // ✅ חשוב! קישור לחידון
                     TeacherID = teacherId,
                     QuestionText = currentQuestion.QuestionText,
                     TopicName = savedTopicId.ToString(),
@@ -1436,25 +1485,32 @@
         customTopic = "";
         quizSubject = "";
         quizTopic = "";
+        quizName = ""; // ✅ איפוס
+        quizDescription = ""; // ✅ איפוס
+        currentQuizId = 0; // ✅ איפוס החידון
         successMessage = "";
         errorMessage = "";
     }
 
+    // ✅ עדכון GoToDashboard
     private void GoToDashboard()
     {
         nav.NavigateTo("/teacher-home");
     }
 
+    // ✅ עדכון CancelCreate
     private void CancelCreate()
     {
         nav.NavigateTo("/teacher-home");
     }
 
+    // ✅ עדכון GetSubjectName
     private string GetSubjectName()
     {
         return string.IsNullOrEmpty(quizSubject) ? "-" : quizSubject;
     }
 
+    // ✅ עדכון GetTopicName
     private string GetTopicName()
     {
         return string.IsNullOrEmpty(quizTopic) ? "-" : quizTopic;

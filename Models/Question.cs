@@ -9,6 +9,7 @@ namespace Models
     public class Question
     {
         public int QuestionID { get; set; }
+        public int QuizId { get; set; }
         public int TeacherID { get; set; }  // Foreign key to the teacher
         public string QuestionText { get; set; }
         public string Hint { get; set; } 
@@ -18,12 +19,14 @@ namespace Models
 
         public Question() { }
 
-        public Question(int id, int teacherId, string text, string topic, DateTime createdAt)
+        public Question(int questionID, int quizId, int teacherID, string questionText, string hint, string topicName, DateTime createdAt)
         {
-            QuestionID = id;
-            TeacherID = teacherId;
-            QuestionText = text;
-            TopicName = topic;
+            QuestionID = questionID;
+            QuizId = quizId;
+            TeacherID = teacherID;
+            QuestionText = questionText;
+            Hint = hint;
+            TopicName = topicName;
             CreatedAt = createdAt;
         }
     }
