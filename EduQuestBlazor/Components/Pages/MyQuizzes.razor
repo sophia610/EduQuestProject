@@ -743,7 +743,7 @@
                 <p style="color: #6b7280; font-weight: 500;">Loading your quizzes...</p>
             </div>
         }
-        else if (filteredQuestions == null || filteredQuestions.Count == 0)
+        else if (filteredQuizzes == null || filteredQuizzes.Count == 0)
         {
             <div class="empty-state">
                 <div class="empty-icon">📚</div>
@@ -767,24 +767,25 @@
         else
         {
             <div class="quizzes-grid">
-                @foreach (var question in filteredQuestions)
+                @foreach (var quiz in filteredQuizzes)
                 {
                     <div class="quiz-card">
                         <div class="quiz-header">
-                            <span class="quiz-topic">@GetTopicName(question.TopicName)</span>
-                            <span class="quiz-date">@question.CreatedAt.ToString("MMM dd, yyyy")</span>
+                            <span class="quiz-topic">@quiz.QuizName</span>
+                            <span class="quiz-date">@quiz.CreatedAt.ToString("MMM dd, yyyy")</span>
                         </div>
-                        <div class="quiz-question">@question.QuestionText</div>
-                        @if (!string.IsNullOrEmpty(question.Hint))
-                        {
-                            <div style="font-size: 13px; color: #9ca3af; margin-bottom: 12px;">
-                                💡 Hint: @question.Hint
-                            </div>
-                        }
+                        <div class="quiz-question">
+                            @if (!string.IsNullOrEmpty(quiz.Description))
+                            {
+                                @quiz.Description
+                                <br />
+                            }
+                            <small style="color: #6b7280;">@quiz.Questions.Count questions</small>
+                        </div>
                         <div class="quiz-meta">
                             <span>
                                 <span>📝</span>
-                                <span>4 Answers</span>
+                                <span>@quiz.Questions.Count Questions</span>
                             </span>
                             <span>
                                 <span>👥</span>
@@ -792,15 +793,15 @@
                             </span>
                         </div>
                         <div class="quiz-actions">
-                            <button class="action-btn btn-view" @onclick="@(() => ViewQuiz(question.QuestionID))">
+                            <button class="action-btn btn-view" @onclick="@(() => ViewQuiz(quiz.QuizId))">
                                 <span>👁</span>
                                 <span>View</span>
                             </button>
-                            <button class="action-btn btn-edit" @onclick="@(() => EditQuiz(question.QuestionID))">
+                            <button class="action-btn btn-edit" @onclick="@(() => EditQuiz(quiz.QuizId))">
                                 <span>✏️</span>
                                 <span>Edit</span>
                             </button>
-                            <button class="action-btn btn-delete" @onclick="@(() => ShowDeleteModal(question.QuestionID))">
+                            <button class="action-btn btn-delete" @onclick="@(() => ShowDeleteModal(quiz.QuizId))">
                                 <span>🗑️</span>
                                 <span>Delete</span>
                             </button>
@@ -830,10 +831,9 @@
         </div>
     </div>
 }
-
 @code {
-    private List<Quiz> allQuizzes;
-    private List<Quiz> filteredQuizzes;
+    private List<Quiz> allQuizzes; // ✅ שינוי מ-Question ל-Quiz
+    private List<Quiz> filteredQuizzes; // ✅ שינוי
     private List<string> subjects = new List<string>();
     private List<string> topics = new List<string>();
 
@@ -847,7 +847,7 @@
     private string errorMessage = "";
 
     private bool showDeleteModal = false;
-    private int questionToDelete = 0;
+    private int quizToDelete = 0; // ✅ שינוי מ-questionToDelete
 
     private int totalQuizzes = 0;
     private int totalStudents = 156;
@@ -864,20 +864,16 @@
             if (result.Success && result.Value != null)
             {
                 teacherId = result.Value.user_id;
-                System.Diagnostics.Debug.WriteLine($"✅ Logged in as Teacher ID: {teacherId}, Name: {result.Value.FullName}");
-
                 await LoadQuizzes();
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("❌ No user session found - redirecting to login");
                 nav.NavigateTo("/login");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ OnInitializedAsync Error: {ex.Message}");
-            errorMessage = $"Initialization error: {ex.Message}";
+            errorMessage = $"Error: {ex.Message}";
         }
         finally
         {
@@ -885,6 +881,7 @@
         }
     }
 
+    // ✅ פונקציה מתוקנת
     private async Task LoadQuizzes()
     {
         try
@@ -894,18 +891,31 @@
 
             totalQuizzes = allQuizzes.Count;
 
-            // חישוב סטטיסטיקות
+            // ✅ חישוב subjects
+            var subjectDb = new SubjectDB();
+            var allSubjects = await subjectDb.GetAllSubjectsAsync();
+
             subjects = allQuizzes
-                .Select(q => GetSubjectName(q.SubjectId))
+                .Select(q => allSubjects.FirstOrDefault(s => s.subject_id == q.SubjectId)?.subject_name ?? "Unknown")
                 .Distinct()
                 .OrderBy(s => s)
+                .ToList();
+
+            // ✅ חישוב topics
+            var topicDb = new TopicDB();
+            var allTopics = await topicDb.GetAllTopicsAsync();
+
+            topics = allQuizzes
+                .Select(q => allTopics.FirstOrDefault(t => t.topic_id == q.TopicId)?.topic_name ?? "Unknown")
+                .Distinct()
+                .OrderBy(t => t)
                 .ToList();
 
             filteredQuizzes = allQuizzes;
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error: {ex.Message}";
+            errorMessage = $"Error loading quizzes: {ex.Message}";
         }
     }
 
@@ -921,8 +931,15 @@
         FilterQuizzes();
     }
 
+    // ✅ פונקציה מתוקנת
     private void FilterQuizzes()
     {
+        if (allQuizzes == null || allQuizzes.Count == 0)
+        {
+            filteredQuizzes = new List<Quiz>();
+            return;
+        }
+
         filteredQuizzes = allQuizzes.Where(q =>
         {
             bool matchesSubject = string.IsNullOrEmpty(selectedSubject) ||
@@ -933,10 +950,13 @@
 
             bool matchesSearch = string.IsNullOrEmpty(searchQuery) ||
                 q.QuizName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                (q.Description != null && q.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) ||
                 q.Questions.Any(question => question.QuestionText.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
 
             return matchesSubject && matchesTopic && matchesSearch;
         }).ToList();
+
+        StateHasChanged();
     }
 
     private void OnSearchInput(ChangeEventArgs e)
@@ -945,31 +965,14 @@
         FilterQuizzes();
     }
 
-    private string GetTopicNameFromId(string topicId, List<Topic> allTopics)
+    // ✅ פונקציות חדשות - פשוטות יותר
+    private string GetTopicName(int topicId)
     {
-        if (string.IsNullOrEmpty(topicId)) return "Unknown";
-
         try
         {
-            int id = int.Parse(topicId);
-            return allTopics.FirstOrDefault(t => t.topic_id == id)?.topic_name ?? "Unknown Topic";
-        }
-        catch
-        {
-            return "Unknown";
-        }
-    }
-
-    private string GetTopicName(string topicId)
-    {
-        if (string.IsNullOrEmpty(topicId)) return "Unknown";
-
-        try
-        {
-            int id = int.Parse(topicId);
             var topicDb = new TopicDB();
             var allTopics = topicDb.GetAllTopicsAsync().Result;
-            return allTopics.FirstOrDefault(t => t.topic_id == id)?.topic_name ?? "Unknown Topic";
+            return allTopics.FirstOrDefault(t => t.topic_id == topicId)?.topic_name ?? "Unknown";
         }
         catch
         {
@@ -977,30 +980,17 @@
         }
     }
 
-    private string GetSubjectNameFromTopicId(string topicId, List<Topic> allTopics, List<Subject> allSubjects)
+    private string GetSubjectName(int subjectId)
     {
-        if (string.IsNullOrEmpty(topicId)) return "";
-
         try
         {
-            if (allTopics == null || allSubjects == null)
-            {
-                var topicDb = new TopicDB();
-                allTopics = topicDb.GetAllTopicsAsync().Result;
-
-                var subjectDb = new SubjectDB();
-                allSubjects = subjectDb.GetAllSubjectsAsync().Result;
-            }
-
-            var topic = allTopics.FirstOrDefault(t => t.topic_id == int.Parse(topicId));
-            if (topic == null) return "";
-
-            var subject = allSubjects.FirstOrDefault(s => s.subject_id == topic.subject_id);
-            return subject?.subject_name ?? "";
+            var subjectDb = new SubjectDB();
+            var allSubjects = subjectDb.GetAllSubjectsAsync().Result;
+            return allSubjects.FirstOrDefault(s => s.subject_id == subjectId)?.subject_name ?? "Unknown";
         }
         catch
         {
-            return "";
+            return "Unknown";
         }
     }
 
@@ -1009,34 +999,35 @@
         nav.NavigateTo("/create-quiz");
     }
 
-    private void ViewQuiz(int questionId)
+    private void ViewQuiz(int quizId)
     {
-        nav.NavigateTo($"/quiz-details/{questionId}");
+        nav.NavigateTo($"/quiz-details/{quizId}");
     }
 
-    private void EditQuiz(int questionId)
+    private void EditQuiz(int quizId)
     {
-        nav.NavigateTo($"/edit-quiz/{questionId}");
+        nav.NavigateTo($"/edit-quiz/{quizId}");
     }
 
-    private void ShowDeleteModal(int questionId)
+    private void ShowDeleteModal(int quizId)
     {
-        questionToDelete = questionId;
+        quizToDelete = quizId; // ✅ שינוי
         showDeleteModal = true;
     }
 
     private void HideDeleteModal()
     {
         showDeleteModal = false;
-        questionToDelete = 0;
+        quizToDelete = 0; // ✅ שינוי
     }
 
+    // ✅ פונקציה מתוקנת
     private async Task ConfirmDelete()
     {
         try
         {
-            var questionDb = new QuestionDB();
-            await questionDb.DeleteQuestionAsync(questionToDelete);
+            var quizDb = new QuizDB();
+            await quizDb.DeleteQuizAsync(quizToDelete); // ✅ מחיקת חידון במקום שאלה
 
             successMessage = "✅ Quiz deleted successfully!";
             errorMessage = "";

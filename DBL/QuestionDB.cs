@@ -43,6 +43,7 @@ namespace DBL
 
                 Dictionary<string, object> questionValues = new()
                 {
+                    { "quiz_id", question.QuizId },
                     { "teacher_id", question.TeacherID },
                     { "question_text", question.QuestionText },
                     { "topic_id", topicId },

@@ -1076,15 +1076,19 @@
         }
 
         InitializeAnswers();
-        if (allQuestions.Count == 0)
-        {
-            await CreateNewQuizAsync();
-        }
+        // ✅ אל תיצור חידון כאן! רק כשמוסיפים שאלה ראשונה
     }
     private async Task CreateNewQuizAsync()
     {
         try
         {
+            // ✅ בדיקה: אם אין subject/topic, אל תיצור חידון
+            if (savedSubjectId == 0 || savedTopicId == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("⚠️ Cannot create quiz: Subject or Topic not set");
+                return;
+            }
+
             var quiz = new Quiz
                 {
                     TeacherId = teacherId,
@@ -1103,6 +1107,10 @@
             {
                 currentQuizId = createdQuiz.QuizId;
                 System.Diagnostics.Debug.WriteLine($"✅ Created new quiz ID: {currentQuizId}");
+            }
+            else
+            {
+                errorMessage = "Failed to create quiz.";
             }
         }
         catch (Exception ex)
