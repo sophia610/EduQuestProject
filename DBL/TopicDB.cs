@@ -17,9 +17,9 @@ namespace DBL
         {
             return new Topic
             {
-                topic_id = Convert.ToInt32(row[0]),   // 1
-                subject_id = Convert.ToInt32(row[1]),   // 2
-                topic_name = row[2]?.ToString()         // 3
+                topic_id = Convert.ToInt32(row[0]),   
+                subject_id = Convert.ToInt32(row[1]),   
+                topic_name = row[2]?.ToString()        
             };
         }
 

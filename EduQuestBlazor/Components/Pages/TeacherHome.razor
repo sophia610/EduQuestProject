@@ -730,17 +730,17 @@
                 else
                 {
                     <div class="quiz-grid">
-                        @foreach (var q in recentQuizzes.Take(4))
+                        @foreach (var quiz in recentQuizzes.Take(4))
                         {
-                            <div class="quiz-card" @onclick="@(()=>nav.NavigateTo($"/quiz-details/{q.QuestionID}"))">
+                            <div class="quiz-card" @onclick="@(()=>nav.NavigateTo($"/quiz-details/{quiz.QuizId}"))">
                                 <div class="quiz-header">
-                                    <div class="quiz-topic">@q.TopicName</div>
+                                    <div class="quiz-topic">@quiz.QuizName</div>
                                     <div class="quiz-badge">Active</div>
                                 </div>
-                                <div class="quiz-text">@q.QuestionText</div>
+                                <div class="quiz-text">@quiz.Description</div>
                                 <div class="quiz-meta">
-                                    <span>👥 @GetRandomStudentCount() students</span>
-                                    <span>📅 @q.CreatedAt.ToString("dd MMM")</span>
+                                    <span>📝 @(quiz.Questions?.Count ?? 0) questions</span>
+                                    <span>📅 @quiz.CreatedAt.ToString("dd MMM")</span>
                                 </div>
                             </div>
                         }
@@ -852,7 +852,7 @@
 
 @code {
     private string teacherName = "";
-    private List<Question> recentQuizzes;
+    private List<Quiz> recentQuizzes;
     private bool _initialized = false;
     private bool _checkingSession = true;
 
@@ -874,7 +874,6 @@
             }
             else
             {
-                // אל תנתב מיד – תני לשלב הבא לעבוד
                 _checkingSession = false;
                 StateHasChanged();
                 return;
@@ -893,10 +892,8 @@
 
     protected override void OnParametersSet()
     {
-        // אם עדיין טוען Session – לא עושים Redirect
-        if (_checkingSession) return;
 
-        // אם אין שם מורה אחרי טעינה → חזרה ללוגין
+        if (_checkingSession) return;
         if (string.IsNullOrEmpty(teacherName))
         {
             nav.NavigateTo("/login");
@@ -905,8 +902,9 @@
 
     private async Task LoadRecentQuizzesAsync(int teacherId)
     {
-        var db = new QuestionDB();
-        recentQuizzes = await db.GetRecentByTeacherAsync(teacherId);
+        var db = new QuizDB(); 
+        recentQuizzes = await db.GetQuizzesByTeacherAsync(teacherId);
+        recentQuizzes = recentQuizzes.OrderByDescending(q => q.CreatedAt).ToList();
     }
 
     private async Task Logout()

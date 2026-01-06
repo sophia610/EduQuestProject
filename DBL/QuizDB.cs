@@ -28,7 +28,6 @@ namespace DBL
             };
         }
 
-        // ✅ יצירת חידון חדש
         public async Task<Quiz> CreateQuizAsync(Quiz quiz)
         {
             Dictionary<string, object> values = new()
@@ -44,8 +43,6 @@ namespace DBL
 
             return await base.InsertGetObjAsync(values);
         }
-
-        // ✅ שליפת חידונים של מורה
         public async Task<List<Quiz>> GetQuizzesByTeacherAsync(int teacherId)
         {
             Dictionary<string, object> filter = new()
@@ -54,8 +51,6 @@ namespace DBL
             };
 
             var quizzes = await SelectAllAsync(filter);
-
-            // טעינת שאלות לכל חידון
             var questionDb = new QuestionDB();
             foreach (var quiz in quizzes)
             {
@@ -65,7 +60,7 @@ namespace DBL
             return quizzes;
         }
 
-        // ✅ שליפת חידון לפי ID עם השאלות
+
         public async Task<Quiz> GetQuizWithQuestionsAsync(int quizId)
         {
             Dictionary<string, object> filter = new()
@@ -77,15 +72,11 @@ namespace DBL
             if (results.Count == 0) return null;
 
             var quiz = results[0];
-
-            // טעינת השאלות
             var questionDb = new QuestionDB();
             quiz.Questions = await questionDb.GetQuestionsByQuizIdAsync(quizId);
 
             return quiz;
         }
-
-        // ✅ מחיקת חידון (עם כל השאלות)
         public async Task<int> DeleteQuizAsync(int quizId)
         {
             try
@@ -93,13 +84,11 @@ namespace DBL
                 var questionDb = new QuestionDB();
                 var questions = await questionDb.GetQuestionsByQuizIdAsync(quizId);
 
-                // מחיקת כל השאלות
                 foreach (var q in questions)
                 {
                     await questionDb.DeleteQuestionAsync(q.QuestionID);
                 }
 
-                // מחיקת החידון
                 Dictionary<string, object> filter = new()
                 {
                     { "quiz_id", quizId }
@@ -112,8 +101,6 @@ namespace DBL
                 throw;
             }
         }
-
-        // ✅ עדכון חידון
         public async Task<int> UpdateQuizAsync(Quiz quiz)
         {
             Dictionary<string, object> values = new()
@@ -131,6 +118,18 @@ namespace DBL
             };
 
             return await base.UpdateAsync(values, filter);
+        }
+        public async Task<List<Quiz>> GetAllQuizzesAsync()
+        {
+            var quizzes = await SelectAllAsync();
+
+            var questionDb = new QuestionDB();
+            foreach (var quiz in quizzes)
+            {
+                quiz.Questions = await questionDb.GetQuestionsByQuizIdAsync(quiz.QuizId);
+            }
+
+            return quizzes;
         }
     }
 

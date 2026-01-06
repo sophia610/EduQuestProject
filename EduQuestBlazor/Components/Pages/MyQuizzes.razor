@@ -832,8 +832,8 @@
     </div>
 }
 @code {
-    private List<Quiz> allQuizzes; // ✅ שינוי מ-Question ל-Quiz
-    private List<Quiz> filteredQuizzes; // ✅ שינוי
+    private List<Quiz> allQuizzes; 
+    private List<Quiz> filteredQuizzes;
     private List<string> subjects = new List<string>();
     private List<string> topics = new List<string>();
 
@@ -847,7 +847,7 @@
     private string errorMessage = "";
 
     private bool showDeleteModal = false;
-    private int quizToDelete = 0; // ✅ שינוי מ-questionToDelete
+    private int quizToDelete = 0; 
 
     private int totalQuizzes = 0;
     private int totalStudents = 156;
@@ -880,8 +880,6 @@
             isLoading = false;
         }
     }
-
-    // ✅ פונקציה מתוקנת
     private async Task LoadQuizzes()
     {
         try
@@ -890,8 +888,6 @@
             allQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
 
             totalQuizzes = allQuizzes.Count;
-
-            // ✅ חישוב subjects
             var subjectDb = new SubjectDB();
             var allSubjects = await subjectDb.GetAllSubjectsAsync();
 
@@ -901,7 +897,6 @@
                 .OrderBy(s => s)
                 .ToList();
 
-            // ✅ חישוב topics
             var topicDb = new TopicDB();
             var allTopics = await topicDb.GetAllTopicsAsync();
 
@@ -930,8 +925,6 @@
         selectedTopic = e.Value?.ToString() ?? "";
         FilterQuizzes();
     }
-
-    // ✅ פונקציה מתוקנת
     private void FilterQuizzes()
     {
         if (allQuizzes == null || allQuizzes.Count == 0)
@@ -965,7 +958,6 @@
         FilterQuizzes();
     }
 
-    // ✅ פונקציות חדשות - פשוטות יותר
     private string GetTopicName(int topicId)
     {
         try
@@ -1011,23 +1003,23 @@
 
     private void ShowDeleteModal(int quizId)
     {
-        quizToDelete = quizId; // ✅ שינוי
+        quizToDelete = quizId; 
         showDeleteModal = true;
     }
 
     private void HideDeleteModal()
     {
         showDeleteModal = false;
-        quizToDelete = 0; // ✅ שינוי
+        quizToDelete = 0; 
     }
 
-    // ✅ פונקציה מתוקנת
+    
     private async Task ConfirmDelete()
     {
         try
         {
             var quizDb = new QuizDB();
-            await quizDb.DeleteQuizAsync(quizToDelete); // ✅ מחיקת חידון במקום שאלה
+            await quizDb.DeleteQuizAsync(quizToDelete); 
 
             successMessage = "✅ Quiz deleted successfully!";
             errorMessage = "";

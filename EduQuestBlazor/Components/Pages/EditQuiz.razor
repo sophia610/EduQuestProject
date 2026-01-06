@@ -1,0 +1,574 @@
+﻿@page "/edit-quiz/{QuizId:int}"
+@using DBL
+@using Models
+@inject NavigationManager nav
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+
+<PageTitle>Edit Quiz | EduQuest</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .page-container {
+        min-height: 100vh;
+        background: #f5f7fa;
+    }
+
+    .top-nav {
+        background: white;
+        padding: 16px 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: none;
+        border: none;
+        color: #3b82f6;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+        .back-btn:hover {
+            background: #eff6ff;
+        }
+
+    .content-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 32px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-title {
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 12px 0;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: #6b7280;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .form-group {
+        margin-bottom: 28px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+        .form-label.required::after {
+            content: '*';
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+    .form-input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+    textarea.form-input {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: inherit;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+    .error-message {
+        color: #ef4444;
+        font-size: 14px;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: #f9fafb;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .toggle-container:hover {
+            background: #f3f4f6;
+        }
+
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        background: #d1d5db;
+        border-radius: 14px;
+        transition: all 0.3s;
+    }
+
+        .toggle-switch.active {
+            background: #3b82f6;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            left: 27px;
+        }
+
+    .toggle-label {
+        flex: 1;
+    }
+
+    .toggle-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 2px;
+    }
+
+    .toggle-description {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 32px;
+        border-top: 2px solid #f3f4f6;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .success-message {
+        background: #f0fdf4;
+        border: 2px solid #86efac;
+        color: #166534;
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .spinner-large {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 16px;
+    }
+
+    .helper-text {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 6px;
+    }
+</style>
+
+<div class="page-container">
+    <div class="top-nav">
+        <button class="back-btn" @onclick="GoBack">
+            <span>←</span>
+            <span>Back to Quiz</span>
+        </button>
+    </div>
+
+    <div class="content-wrapper">
+        @if (isLoading)
+        {
+            <div class="loading-state">
+                <div class="spinner-large"></div>
+                <p>Loading quiz...</p>
+            </div>
+        }
+        else if (quiz == null)
+        {
+            <div class="loading-state">
+                <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                <p>Quiz not found</p>
+            </div>
+        }
+        else
+        {
+            <div class="page-header">
+                <h1 class="page-title">Edit Quiz</h1>
+                <p class="page-subtitle">Update your quiz information</p>
+            </div>
+
+            @if (showSuccess)
+            {
+                <div class="success-message">
+                    <span style="font-size: 20px;">✓</span>
+                    <span>Quiz updated successfully!</span>
+                </div>
+            }
+
+            <div class="form-card">
+                <EditForm Model="@quiz" OnValidSubmit="HandleSubmit">
+                    <div class="form-group">
+                        <label class="form-label required">Quiz Name</label>
+                        <InputText @bind-Value="quiz.QuizName" class="form-input" placeholder="Enter quiz name" />
+                        @if (string.IsNullOrWhiteSpace(quiz.QuizName) && showErrors)
+                        {
+                            <div class="error-message">
+                                <span>⚠️</span>
+                                <span>Quiz name is required</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <InputTextArea @bind-Value="quiz.Description" class="form-input" placeholder="Add a description for your quiz" rows="4" />
+                        <div class="helper-text">Provide context to help students understand what this quiz covers</div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">Subject</label>
+                            <InputSelect @bind-Value="quiz.SubjectId" class="form-select" @onchange="OnSubjectChanged">
+                                <option value="0">Select a subject</option>
+                                @if (subjects != null)
+                                {
+                                    @foreach (var subject in subjects)
+                                    {
+                                        <option value="@subject.subject_id">@subject.subject_name</option>
+                                    }
+                                }
+                            </InputSelect>
+                            @if (quiz.SubjectId == 0 && showErrors)
+                            {
+                                <div class="error-message">
+                                    <span>⚠️</span>
+                                    <span>Please select a subject</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Topic</label>
+                            <InputSelect @bind-Value="quiz.TopicId" class="form-select" disabled="@(quiz.SubjectId == 0)">
+                                <option value="0">Select a topic</option>
+                                @if (topics != null)
+                                {
+                                    @foreach (var topic in topics)
+                                    {
+                                        <option value="@topic.topic_id">@topic.topic_name</option>
+                                    }
+                                }
+                            </InputSelect>
+                            @if (quiz.TopicId == 0 && showErrors)
+                            {
+                                <div class="error-message">
+                                    <span>⚠️</span>
+                                    <span>Please select a topic</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quiz Status</label>
+                        <div class="toggle-container" @onclick="ToggleActive">
+                            <div class="toggle-switch @(quiz.IsActive ? "active" : "")"></div>
+                            <div class="toggle-label">
+                                <div class="toggle-title">@(quiz.IsActive ? "Active" : "Inactive")</div>
+                                <div class="toggle-description">
+                                    @(quiz.IsActive ? "Students can access this quiz" : "Quiz is hidden from students")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <div class="loading-spinner"></div>
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <span>💾</span>
+                                <span>Save Changes</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int QuizId { get; set; }
+
+    private Quiz quiz;
+    private List<Subject> subjects;
+    private List<Topic> topics;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool showErrors = false;
+    private bool showSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            isLoading = true;
+            var quizDb = new QuizDB();
+            quiz = await quizDb.GetQuizWithQuestionsAsync(QuizId);
+
+            if (quiz == null)
+            {
+                return;
+            }
+            var subjectDb = new SubjectDB();
+            subjects = await subjectDb.GetAllSubjectsAsync();
+            if (quiz.SubjectId > 0)
+            {
+                await LoadTopicsAsync(quiz.SubjectId);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnSubjectChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int subjectId))
+        {
+            quiz.SubjectId = subjectId;
+            quiz.TopicId = 0; // איפוס הנושא
+            await LoadTopicsAsync(subjectId);
+        }
+    }
+
+    private async Task LoadTopicsAsync(int subjectId)
+    {
+        try
+        {
+            var topicDb = new TopicDB();
+            topics = await topicDb.GetBySubjectAsync(subjectId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading topics: {ex.Message}");
+            topics = new List<Topic>();
+        }
+    }
+
+    private void ToggleActive()
+    {
+        quiz.IsActive = !quiz.IsActive;
+    }
+
+    private async Task HandleSubmit()
+    {
+        showErrors = true;
+
+        // בדיקת תקינות
+        if (string.IsNullOrWhiteSpace(quiz.QuizName))
+        {
+            return;
+        }
+
+        if (quiz.SubjectId == 0 || quiz.TopicId == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+            var db = new QuizDB();
+            await db.UpdateQuizAsync(quiz);
+
+            showSuccess = true;
+            await Task.Delay(1500); 
+            nav.NavigateTo($"/quiz-details/{QuizId}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error updating quiz: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        nav.NavigateTo($"/quiz-details/{QuizId}");
+    }
+
+    private void GoBack()
+    {
+        nav.NavigateTo($"/quiz-details/{QuizId}");
+    }
+}

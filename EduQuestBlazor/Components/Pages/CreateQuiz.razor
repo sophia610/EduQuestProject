@@ -1010,34 +1010,27 @@
     </main>
 </div>
 @code {
-    // ✅ נתוני שאלה נוכחית
     private QuizQuestion currentQuestion = new QuizQuestion();
     private List<Answer> currentAnswers = new List<Answer>();
     private string questionHint = "";
-
-    // ✅ כל השאלות בחידון
     private List<QuizQuestion> allQuestions = new List<QuizQuestion>();
 
-    // ✅ Subject & Topic
     private List<Subject> allSubjects = new List<Subject>();
     private List<Topic> allTopics = new List<Topic>();
     private List<Topic> filteredTopics = new List<Topic>();
     private int selectedSubjectId = 0;
     private int selectedTopicId = 0;
 
-    // ✅ Custom Subject & Topic
     private bool isCustomSubject = false;
     private bool isCustomTopic = false;
     private string customSubject = "";
     private string customTopic = "";
 
-    // ✅ Subject & Topic שמורים
     private int savedSubjectId = 0;
     private int savedTopicId = 0;
     private string quizSubject = "";
     private string quizTopic = "";
 
-    // ✅ UI State
     private int currentStep = 1;
     private string successMessage = "";
     private string errorMessage = "";
@@ -1076,13 +1069,13 @@
         }
 
         InitializeAnswers();
-        // ✅ אל תיצור חידון כאן! רק כשמוסיפים שאלה ראשונה
+        
     }
     private async Task CreateNewQuizAsync()
     {
         try
         {
-            // ✅ בדיקה: אם אין subject/topic, אל תיצור חידון
+           
             if (savedSubjectId == 0 || savedTopicId == 0)
             {
                 System.Diagnostics.Debug.WriteLine("⚠️ Cannot create quiz: Subject or Topic not set");
@@ -1197,8 +1190,6 @@
         }
         StateHasChanged();
     }
-
-    // ✅ הוספת שאלה חדשה - עם שמירה מיידית למסד נתונים!
     private async Task HandleAddQuestion()
     {
         errorMessage = "";
@@ -1207,7 +1198,7 @@
 
         try
         {
-            // ✅ בדיקות תקינות
+
             if (!isCustomSubject && selectedSubjectId == 0)
             {
                 errorMessage = "Please select or enter a subject.";
@@ -1260,7 +1251,6 @@
                 return;
             }
 
-            // ✅ שמירת Subject & Topic (בשאלה הראשונה בלבד)
             if (allQuestions.Count == 0)
             {
                 if (isCustomSubject)
@@ -1296,8 +1286,6 @@
                     savedTopicId = selectedTopicId;
                     quizTopic = allTopics.FirstOrDefault(t => t.topic_id == selectedTopicId)?.topic_name ?? "";
                 }
-
-                // ✅ יצירת חידון חדש אחרי שמירת Subject & Topic
                 await CreateNewQuizAsync();
 
                 if (currentQuizId == 0)
@@ -1307,11 +1295,9 @@
                     return;
                 }
             }
-
-            // ✅ שמירה מיידית למסד נתונים עם quiz_id!
             var question = new Question
                 {
-                    QuizId = currentQuizId, // ✅ חשוב! קישור לחידון
+                    QuizId = currentQuizId, 
                     TeacherID = teacherId,
                     QuestionText = currentQuestion.QuestionText,
                     TopicName = savedTopicId.ToString(),
@@ -1331,7 +1317,6 @@
 
             if (savedQuestion != null)
             {
-                // ✅ שמירה גם ברשימה המקומית
                 var newQ = new QuizQuestion
                     {
                         QuestionID = savedQuestion.QuestionID,
@@ -1343,8 +1328,6 @@
                     };
 
                 allQuestions.Add(newQ);
-
-                // ✅ איפוס טופס
                 currentQuestion = new QuizQuestion { TeacherID = teacherId };
                 questionHint = "";
                 InitializeAnswers();
@@ -1391,21 +1374,17 @@
         currentStep = 1;
     }
 
-    // ✅ עריכת שאלה - מחיקה מהמסד ושמירה מחדש
     private async Task EditQuestion(int index)
     {
         try
         {
             var q = allQuestions[index];
 
-            // ✅ מחיקת השאלה ממסד הנתונים
             if (q.QuestionID > 0)
             {
                 var questionDb = new QuestionDB();
                 await questionDb.DeleteQuestionAsync(q.QuestionID);
             }
-
-            // טעינת הנתונים לעריכה
             currentQuestion.QuestionText = q.QuestionText;
             questionHint = q.Hint;
             currentAnswers = new List<Answer>(q.Answers);
@@ -1421,14 +1400,12 @@
         }
     }
 
-    // ✅ מחיקת שאלה - גם מהמסד נתונים
     private async Task DeleteQuestion(int index)
     {
         try
         {
             var q = allQuestions[index];
 
-            // ✅ מחיקה ממסד הנתונים
             if (q.QuestionID > 0)
             {
                 var questionDb = new QuestionDB();
@@ -1447,7 +1424,7 @@
         }
     }
 
-    // ✅ פרסום חידון - כבר נשמר!
+   
     private async Task PublishQuiz()
     {
         errorMessage = "";
@@ -1461,8 +1438,6 @@
                 isLoading = false;
                 return;
             }
-
-            // ✅ השאלות כבר נשמרו במסד הנתונים!
             currentStep = 3;
             successMessage = $"🎉 Quiz with {allQuestions.Count} questions published successfully!";
         }
@@ -1493,41 +1468,37 @@
         customTopic = "";
         quizSubject = "";
         quizTopic = "";
-        quizName = ""; // ✅ איפוס
-        quizDescription = ""; // ✅ איפוס
-        currentQuizId = 0; // ✅ איפוס החידון
+        quizName = ""; 
+        quizDescription = ""; 
+        currentQuizId = 0; 
         successMessage = "";
         errorMessage = "";
     }
 
-    // ✅ עדכון GoToDashboard
+
     private void GoToDashboard()
     {
         nav.NavigateTo("/teacher-home");
     }
 
-    // ✅ עדכון CancelCreate
+    
     private void CancelCreate()
     {
         nav.NavigateTo("/teacher-home");
     }
 
-    // ✅ עדכון GetSubjectName
     private string GetSubjectName()
     {
         return string.IsNullOrEmpty(quizSubject) ? "-" : quizSubject;
     }
 
-    // ✅ עדכון GetTopicName
     private string GetTopicName()
     {
         return string.IsNullOrEmpty(quizTopic) ? "-" : quizTopic;
     }
-
-    // ✅ Helper class - עם QuestionID
     public class QuizQuestion
     {
-        public int QuestionID { get; set; } // ✅ מזהה מהמסד נתונים
+        public int QuestionID { get; set; } 
         public int TeacherID { get; set; }
         public string QuestionText { get; set; }
         public string Hint { get; set; } = "";

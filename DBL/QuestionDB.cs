@@ -14,16 +14,17 @@ namespace DBL
 
         protected override async Task<Question> CreateModelAsync(object[] row)
         {
-            // ✅ סדר העמודות בטבלה שלך: question_id, topic_id, teacher_id, question_text, hint, created_at
+            // ✅ סדר נכון: question_id, quiz_id, topic_id, teacher_id, question_text, hint, created_at
             Question q = new Question
             {
                 QuestionID = Convert.ToInt32(row[0]),        // question_id
-                TopicName = row[1]?.ToString(),              // topic_id (נשמר כ-string)
-                TeacherID = Convert.ToInt32(row[2]),         // teacher_id
-                QuestionText = row[3]?.ToString(),           // question_text
-                Hint = row.Length > 4 && row[4] != DBNull.Value ? row[4].ToString() : "", // hint
-                CreatedAt = row.Length > 5 && row[5] != DBNull.Value && row[5] != null
-                    ? Convert.ToDateTime(row[5])             // created_at
+                QuizId = row[1] != DBNull.Value ? Convert.ToInt32(row[1]) : 0, // quiz_id
+                TopicName = row[2]?.ToString(),              // topic_id
+                TeacherID = Convert.ToInt32(row[3]),         // teacher_id
+                QuestionText = row[4]?.ToString(),           // question_text
+                Hint = row.Length > 5 && row[5] != DBNull.Value ? row[5].ToString() : "", // hint
+                CreatedAt = row.Length > 6 && row[6] != DBNull.Value && row[6] != null
+                    ? Convert.ToDateTime(row[6])             // created_at
                     : DateTime.Now
             };
             return q;

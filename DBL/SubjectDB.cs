@@ -21,14 +21,10 @@ namespace DBL
                 subject_name = row[1]?.ToString()
             };
         }
-
-        // שליפת כל המקצועות
         public async Task<List<Subject>> GetAllSubjectsAsync()
         {
             return await SelectAllAsync();
         }
-
-        // הוספת מקצוע חדש
         public async Task<int> InsertSubjectAsync(Subject subject)
         {
             Dictionary<string, object> values = new()
@@ -37,8 +33,6 @@ namespace DBL
             };
             return await InsertAsync(values);
         }
-
-        // עדכון מקצוע
         public async Task<int> UpdateSubjectAsync(Subject subject)
         {
             Dictionary<string, object> values = new()
@@ -51,8 +45,6 @@ namespace DBL
             };
             return await UpdateAsync(values, filter);
         }
-
-        // מחיקת מקצוע
         public async Task<int> DeleteSubjectAsync(int subjectId)
         {
             Dictionary<string, object> filter = new()

@@ -20,13 +20,13 @@ namespace DBL
                 AnswerId = Convert.ToInt32(row[0]),
                 QuestionId = Convert.ToInt32(row[1]),
                 AnswerText = row[2]?.ToString(),
-                IsCorrect = Convert.ToBoolean(row[3]), // ✅ MySQL TINYINT(1) מומר אוטומטית ל-bool
+                IsCorrect = Convert.ToBoolean(row[3]), 
                 Explanation = row[4]?.ToString()
             };
             return a;
         }
 
-        // ✅ הוספת תשובה - תיקון מלא
+       
         public async Task<Answer> InsertAnswerAsync(Answer answer)
         {
             try
@@ -35,7 +35,7 @@ namespace DBL
                 {
                     { "question_id", answer.QuestionId },
                     { "answer_text", answer.AnswerText },
-                    { "is_correct", answer.IsCorrect ? 1 : 0 }, // ✅ המרה מפורשת ל-TINYINT(1)
+                    { "is_correct", answer.IsCorrect ? 1 : 0 },
                     { "explanation", answer.Explanation ?? "" }
                 };
 
@@ -68,7 +68,7 @@ namespace DBL
             return await base.DeleteAsync(filter);
         }
 
-        // ✅ עדכון תשובה
+        //  עדכון תשובה
         public async Task<int> UpdateAnswerAsync(Answer answer)
         {
             try
@@ -76,7 +76,7 @@ namespace DBL
                 Dictionary<string, object> values = new()
                 {
                     { "answer_text", answer.AnswerText },
-                    { "is_correct", answer.IsCorrect ? 1 : 0 }, // ✅ המרה מפורשת
+                    { "is_correct", answer.IsCorrect ? 1 : 0 }, 
                     { "explanation", answer.Explanation ?? "" }
                 };
 
@@ -94,7 +94,7 @@ namespace DBL
             }
         }
 
-        // ✅ מחיקת כל התשובות של שאלה
+        //  מחיקת כל התשובות של שאלה
         public async Task<int> DeleteAnswersByQuestionIdAsync(int questionId)
         {
             Dictionary<string, object> filter = new()
