@@ -477,7 +477,7 @@
                 }
             </div>
 
-            @if (answers.Count < 6)
+            @if (answers.Count < 4)
             {
                 <button type="button" class="add-answer-btn" @onclick="AddAnswer">
                     <span>➕</span>
@@ -520,6 +520,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // טעינת פרטי המורה מה-session
         try
         {
             var result = await session.GetAsync<Customers>("user");
@@ -529,6 +530,8 @@
             }
         }
         catch { }
+
+        // יצירת 4 תשובות ריקות כברירת מחדל
         for (int i = 0; i < 4; i++)
         {
             answers.Add(new Answer
@@ -542,7 +545,7 @@
 
     private void AddAnswer()
     {
-        if (answers.Count < 6)
+        if (answers.Count < 4)
         {
             answers.Add(new Answer
             {
@@ -552,6 +555,7 @@
             });
         }
     }
+
 
     private void RemoveAnswer(int index)
     {
@@ -563,6 +567,7 @@
 
     private void ToggleCorrect(int index)
     {
+        // ניתן לבחור רק תשובה אחת נכונה
         for (int i = 0; i < answers.Count; i++)
         {
             answers[i].IsCorrect = (i == index);
@@ -572,15 +577,21 @@
     private bool ValidateForm()
     {
         validationErrors.Clear();
+
+        // בדיקת שאלה
         if (string.IsNullOrWhiteSpace(questionText))
         {
             validationErrors.Add("Question text is required");
         }
+
+        // בדיקת תשובות
         var filledAnswers = answers.Where(a => !string.IsNullOrWhiteSpace(a.AnswerText)).ToList();
         if (filledAnswers.Count < 2)
         {
             validationErrors.Add("At least 2 answers are required");
         }
+
+        // בדיקת תשובה נכונה
         if (!answers.Any(a => a.IsCorrect && !string.IsNullOrWhiteSpace(a.AnswerText)))
         {
             validationErrors.Add("You must mark one answer as correct");
@@ -601,22 +612,28 @@
         try
         {
             isSaving = true;
+
+            // יצירת השאלה
             var question = new Question
             {
                 QuizId = QuizId,
                 TeacherID = teacherId,
                 QuestionText = questionText,
                 Hint = hint ?? "",
-                TopicName = "1", 
+                TopicName = "1", // ניתן לשנות לפי הצורך
                 CreatedAt = DateTime.Now
             };
+
+            // סינון תשובות ריקות
             var validAnswers = answers
                 .Where(a => !string.IsNullOrWhiteSpace(a.AnswerText))
                 .ToList();
+
+            // שמירה בדאטהבייס
             var db = new QuestionDB();
             await db.InsertQuestionWithAnswersAsync(question, validAnswers);
 
-           
+            // חזרה לדף החידון
             nav.NavigateTo($"/quiz-details/{QuizId}");
         }
         catch (Exception ex)

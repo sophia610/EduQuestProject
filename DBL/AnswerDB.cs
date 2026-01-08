@@ -69,21 +69,22 @@ namespace DBL
         }
 
         //  עדכון תשובה
+        // ✅ עדכון תשובה
         public async Task<int> UpdateAnswerAsync(Answer answer)
         {
             try
             {
                 Dictionary<string, object> values = new()
-                {
-                    { "answer_text", answer.AnswerText },
-                    { "is_correct", answer.IsCorrect ? 1 : 0 }, 
-                    { "explanation", answer.Explanation ?? "" }
-                };
+        {
+            { "answer_text", answer.AnswerText },
+            { "is_correct", answer.IsCorrect ? 1 : 0 },
+            { "explanation", answer.Explanation ?? "" } 
+        };
 
                 Dictionary<string, object> filter = new()
-                {
-                    { "answer_id", answer.AnswerId }
-                };
+        {
+            { "answer_id", answer.AnswerId }
+        };
 
                 return await base.UpdateAsync(values, filter);
             }
