@@ -873,7 +873,38 @@
                         </div>
                     }
                 </div>
+                <div class="review-section">
+                    <h3 class="review-title">Rate the Questions ⭐</h3>
+                    <p style="color: #6b7280; margin-bottom: 20px;">Help improve the quiz by rating each question</p>
+                    @for (int i = 0; i < selectedQuestions.Count; i++)
+                    {
+                        var q = selectedQuestions[i];
+                        var qIndex = i;
+                        var timeTaken = questionTimes[i];
 
+                        <div class="review-item">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                                <div class="review-question" style="flex: 1;">Q@(i + 1): @q.QuestionText</div>
+                                <div style="color: #667eea; font-size: 13px; font-weight: 600;">
+                                    ⏱️ @timeTaken sec
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span style="font-size: 14px; color: #6b7280; margin-right: 8px;">Your rating:</span>
+                                @for (int star = 1; star <= 5; star++)
+                                {
+                                    var starValue = star;
+                                    <button @onclick="@(() => RateQuestion(qIndex, starValue))"
+                                            style="background: none; border: none; cursor: pointer; font-size: 28px; padding: 4px; transition: transform 0.2s;"
+                                            onmouseover="this.style.transform='scale(1.2)'"
+                                            onmouseout="this.style.transform='scale(1)'">
+                                        @(GetQuestionRating(qIndex) >= starValue ? "⭐" : "☆")
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
                 <div class="results-actions">
                     <button class="btn btn-secondary" @onclick="GoToSearch">
                         Browse Quizzes
@@ -909,8 +940,35 @@
     private int scorePercentage = 0;
     private Answer correctAnswer;
 
+    // ✅ מעקב אחר זמן ומשתמש
+    private int currentStudentId = 0;
+    private List<bool> hintsUsed = new();
+    private List<int> questionTimes = new();
+    private DateTime questionStartTime;
+    private Dictionary<int, int> questionRatings = new();
+
     protected override async Task OnInitializedAsync()
     {
+        // ✅ שליפת המשתמש המחובר
+        try
+        {
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                currentStudentId = result.Value.user_id;
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+                return;
+            }
+        }
+        catch
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
         await LoadQuizAsync();
     }
 
@@ -951,6 +1009,11 @@
         currentQuestionIndex = 0;
         correctAnswers = 0;
         userAnswers.Clear();
+        
+        // ✅ אתחול מעקב
+        hintsUsed = new List<bool>(new bool[selectedQuestions.Count]);
+        questionTimes = new List<int>(new int[selectedQuestions.Count]);
+        questionStartTime = DateTime.Now; // ✅ התחלת טיימר לשאלה הראשונה
     }
 
     private void SelectAnswer(int index)
@@ -964,11 +1027,16 @@
     private void ShowHint()
     {
         showHint = true;
+        hintsUsed[currentQuestionIndex] = true; // ✅ סימון שהשתמש ברמז
     }
 
-    private void SubmitAnswer()
+    private async Task SubmitAnswer()
     {
         if (selectedAnswerIndex == -1) return;
+
+        // ✅ חישוב זמן שלקח לענות על השאלה
+        var timeTaken = (int)(DateTime.Now - questionStartTime).TotalSeconds;
+        questionTimes[currentQuestionIndex] = timeTaken;
 
         answerSubmitted = true;
         userAnswers[currentQuestionIndex] = selectedAnswerIndex;
@@ -976,9 +1044,39 @@
         var currentQ = selectedQuestions[currentQuestionIndex];
         correctAnswer = currentQ.Answers.FirstOrDefault(a => a.IsCorrect);
         
-        if (currentQ.Answers[selectedAnswerIndex].IsCorrect)
+        bool isCorrect = currentQ.Answers[selectedAnswerIndex].IsCorrect;
+        if (isCorrect)
         {
             correctAnswers++;
+        }
+
+        // ✅ שמירת התוצאה במסד נתונים
+        await SaveResultAsync(currentQ, isCorrect, timeTaken);
+    }
+
+    private async Task SaveResultAsync(Question question, bool isCorrect, int timeTaken)
+    {
+        try
+        {
+            var resultDb = new ResultDB();
+            var result = new Result
+            {
+                student_id = currentStudentId,
+                question_id = question.QuestionID,
+                quiz_id = QuizId,
+                is_correct = isCorrect ? 1 : 0,
+                used_hint = hintsUsed[currentQuestionIndex] ? 1 : 0,
+                time_taken = timeTaken, // ✅ זמן בשניות
+                rating = 0,
+                score = 0, // יתעדכן בסוף
+                answered_at = DateTime.Now
+            };
+
+            await resultDb.InsertResultAsync(result);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error saving result: {ex.Message}");
         }
     }
 
@@ -991,6 +1089,7 @@
             answerSubmitted = false;
             showHint = false;
             correctAnswer = null;
+            questionStartTime = DateTime.Now; // ✅ התחלת טיימר לשאלה הבאה
         }
         else
         {
@@ -998,10 +1097,26 @@
         }
     }
 
-    private void FinishQuiz()
+    private async void FinishQuiz()
     {
         quizFinished = true;
         scorePercentage = (int)Math.Round((double)correctAnswers / selectedQuestions.Count * 100);
+        
+        // ✅ שמירת הציון הסופי במסד נתונים
+        await SaveFinalScoreAsync();
+    }
+
+    private async Task SaveFinalScoreAsync()
+    {
+        try
+        {
+            var resultDb = new ResultDB();
+            await resultDb.UpdateQuizScoreAsync(currentStudentId, QuizId, scorePercentage);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error saving final score: {ex.Message}");
+        }
     }
 
     private void RetakeQuiz()
@@ -1015,6 +1130,40 @@
         correctAnswers = 0;
         userAnswers.Clear();
         selectedQuestions.Clear();
+        hintsUsed.Clear();
+        questionTimes.Clear();
+        questionRatings.Clear();
+    }
+
+    // ✅ פונקציות דירוג
+    private void RateQuestion(int questionIndex, int rating)
+    {
+        questionRatings[questionIndex] = rating;
+        SaveQuestionRating(selectedQuestions[questionIndex].QuestionID, rating);
+    }
+
+    private int GetQuestionRating(int questionIndex)
+    {
+        return questionRatings.ContainsKey(questionIndex) ? questionRatings[questionIndex] : 0;
+    }
+
+    private async void SaveQuestionRating(int questionId, int rating)
+    {
+        try
+        {
+            var resultDb = new ResultDB();
+            var results = await resultDb.GetStudentQuizResultsAsync(currentStudentId, QuizId);
+            var result = results.FirstOrDefault(r => r.question_id == questionId);
+            
+            if (result != null)
+            {
+                await resultDb.UpdateRatingAsync(result.result_id, rating);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error saving rating: {ex.Message}");
+        }
     }
 
     private void GoToSearch()
