@@ -460,7 +460,7 @@
                             </button>
                         }
                         <span class="sort-label">Sort by:</span>
-                        <select class="sort-select" value="@sortBy" @onchange="OnSortChanged">>
+                        <select class="sort-select" value="@sortBy" @onchange="OnSortChanged">
                             <option value="newest">Newest First</option>
                             <option value="oldest">Oldest First</option>
                             <option value="name">Name (A-Z)</option>
@@ -493,10 +493,10 @@
                                 </div>
                                 <div class="quiz-footer">
                                     <div class="teacher-info">
-                                        <div class="teacher-avatar">T</div>
-                                        <span class="teacher-name">Teacher</span>
+                                        <div class="teacher-avatar">@GetTeacherInitials(quiz.TeacherId)</div>
+                                        <span class="teacher-name">@GetTeacherName(quiz.TeacherId)</span>
                                     </div>
-                                    <button class="start-btn" @onclick:stopPropagation>
+                                    <button class="start-btn" @onclick="@(() => StartQuiz(quiz.QuizId))" @onclick:stopPropagation>
                                         Start Quiz →
                                     </button>
                                 </div>
@@ -514,6 +514,7 @@
     private List<Quiz> filteredQuizzes = new();
     private List<Subject> subjects = new();
     private List<Topic> topics = new();
+    private Dictionary<int, string> teacherNames = new(); // ✅ שמות מורים
 
     private string searchQuery = "";
     private int selectedSubject = 0;
@@ -532,10 +533,28 @@
         try
         {
             isLoading = true;
+
+            // טעינת כל החידונים
             var quizDb = new QuizDB();
             allQuizzes = await quizDb.GetAllQuizzesAsync();
+
+            // ✅ טעינת שמות מורים
+            var customerDb = new CustomerDB();
+            var uniqueTeacherIds = allQuizzes.Select(q => q.TeacherId).Distinct().ToList();
+            foreach (var teacherId in uniqueTeacherIds)
+            {
+                var teacher = await customerDb.SelectByPkAsync(teacherId);
+                if (teacher != null)
+                {
+                    teacherNames[teacherId] = teacher.FullName;
+                }
+            }
+
+            // טעינת מקצועות
             var subjectDb = new SubjectDB();
             subjects = await subjectDb.GetAllSubjectsAsync();
+
+            // הצגת כל החידונים בהתחלה
             filteredQuizzes = allQuizzes.ToList();
             SortQuizzes();
         }
@@ -570,6 +589,27 @@
         }
     }
 
+    private void OnTopicChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int topicId))
+        {
+            selectedTopic = topicId;
+            FilterQuizzes();
+        }
+    }
+
+    private void OnStatusChanged(ChangeEventArgs e)
+    {
+        selectedStatus = e.Value?.ToString() ?? "all";
+        FilterQuizzes();
+    }
+
+    private void OnSortChanged(ChangeEventArgs e)
+    {
+        sortBy = e.Value?.ToString() ?? "newest";
+        SortQuizzes();
+    }
+
     private void HandleSearch(KeyboardEventArgs e)
     {
         FilterQuizzes();
@@ -579,12 +619,18 @@
     {
         filteredQuizzes = allQuizzes.Where(q =>
         {
-            
+            // סינון לפי חיפוש טקסט
             bool matchesSearch = string.IsNullOrEmpty(searchQuery) ||
                                  q.QuizName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                                  (q.Description != null && q.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+
+            // סינון לפי מקצוע
             bool matchesSubject = selectedSubject == 0 || q.SubjectId == selectedSubject;
+
+            // סינון לפי נושא
             bool matchesTopic = selectedTopic == 0 || q.TopicId == selectedTopic;
+
+            // סינון לפי סטטוס
             bool matchesStatus = selectedStatus switch
             {
                 "active" => q.IsActive,
@@ -625,6 +671,22 @@
         return subject?.subject_name ?? "General";
     }
 
+    private string GetTeacherName(int teacherId)
+    {
+        return teacherNames.ContainsKey(teacherId) ? teacherNames[teacherId] : "Teacher";
+    }
+
+    private string GetTeacherInitials(int teacherId)
+    {
+        if (!teacherNames.ContainsKey(teacherId)) return "T";
+
+        var name = teacherNames[teacherId];
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name[0].ToString().ToUpper();
+    }
+
     private void StartQuiz(int quizId)
     {
         nav.NavigateTo($"/take-quiz/{quizId}");
@@ -633,25 +695,5 @@
     private void GoBack()
     {
         nav.NavigateTo("/student-home");
-    }
-    private void OnTopicChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int topicId))
-        {
-            selectedTopic = topicId;
-            FilterQuizzes();
-        }
-    }
-
-    private void OnStatusChanged(ChangeEventArgs e)
-    {
-        selectedStatus = e.Value?.ToString() ?? "all";
-        FilterQuizzes();
-    }
-
-    private void OnSortChanged(ChangeEventArgs e)
-    {
-        sortBy = e.Value?.ToString() ?? "newest";
-        SortQuizzes();
     }
 }

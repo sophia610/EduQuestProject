@@ -129,6 +129,14 @@
             };
             return await SelectAllAsync(filter);
         }
+        public async Task<List<Result>> GetAllQuizResultsAsync(int quizId)
+        {
+            Dictionary<string, object> filter = new()
+    {
+        { "quiz_id", quizId }
+    };
+            return await SelectAllAsync(filter);
+        }
 
         // ✅ סטטיסטיקות לשאלה - כמה תלמידים ענו נכון/שגוי
         public async Task<Dictionary<string, int>> GetQuestionStatsAsync(int questionId)

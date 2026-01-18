@@ -52,6 +52,15 @@
         gap: 12px;
     }
 
+    .btn-stats {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+        .btn-stats:hover {
+            background: #dcfce7;
+        }
+
     .action-btn {
         padding: 10px 20px;
         border-radius: 10px;
@@ -469,6 +478,10 @@
             <span>Back to Dashboard</span>
         </button>
         <div class="nav-actions">
+            <button class="action-btn btn-stats" @onclick="ViewStatistics">
+                <span>📊</span>
+                <span>View Statistics</span>
+            </button>
             <button class="action-btn btn-edit" @onclick="EditQuiz">
                 <span>✏️</span>
                 <span>Edit Quiz</span>
@@ -525,17 +538,17 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-icon">👥</div>
-                    <div class="stat-number">@GetRandomNumber(15, 45)</div>
+                    <div class="stat-number">@studentsAttempted</div>
                     <div class="stat-label">Students Attempted</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-icon">✓</div>
-                    <div class="stat-number">@GetRandomNumber(10, 35)</div>
+                    <div class="stat-number">@studentsCompleted</div>
                     <div class="stat-label">Completed</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-icon">⭐</div>
-                    <div class="stat-number">@GetRandomNumber(70, 95)%</div>
+                    <div class="stat-number">@averageScore%</div>
                     <div class="stat-label">Avg Score</div>
                 </div>
             </div>
@@ -656,6 +669,9 @@
     private bool showDeleteModal = false;
     private bool showDeleteQuestionModal = false;
     private int questionToDelete = 0;
+    private int studentsAttempted = 0;
+    private int studentsCompleted = 0;
+    private int averageScore = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -669,6 +685,10 @@
             isLoading = true;
             var db = new QuizDB();
             quiz = await db.GetQuizWithQuestionsAsync(QuizId);
+            if (quiz != null)
+            {
+                await LoadStatisticsAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -679,7 +699,38 @@
             isLoading = false;
         }
     }
+    private async Task LoadStatisticsAsync()
+    {
+        try
+        {
+            var resultDb = new ResultDB();
+            var allResults = await resultDb.GetAllQuizResultsAsync(QuizId);
 
+            if (allResults.Count > 0)
+            {
+                // כמה תלמידים התחילו
+                studentsAttempted = allResults.Select(r => r.student_id).Distinct().Count();
+
+                // כמה תלמידים סיימו (יש להם score > 0)
+                studentsCompleted = allResults.Where(r => r.score > 0)
+                                              .Select(r => r.student_id)
+                                              .Distinct()
+                                              .Count();
+
+                // ציון ממוצע (רק של מי שסיים)
+                var completedScores = allResults.Where(r => r.score > 0)
+                                                .GroupBy(r => r.student_id)
+                                                .Select(g => g.First().score)
+                                                .ToList();
+
+                averageScore = completedScores.Count > 0 ? (int)completedScores.Average() : 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading statistics: {ex.Message}");
+        }
+    }
     private void GoBack()
     {
         nav.NavigateTo("/teacher-home");
@@ -755,5 +806,9 @@
     {
         var random = new Random();
         return random.Next(min, max + 1);
+    }
+    private void ViewStatistics()
+    {
+        nav.NavigateTo($"/quiz-statistics/{QuizId}");
     }
 }

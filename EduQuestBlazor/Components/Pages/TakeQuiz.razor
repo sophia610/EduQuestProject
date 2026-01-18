@@ -691,6 +691,20 @@
                     </div>
                 </div>
 
+                <!-- ✅ מידע נוסף -->
+                <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 16px; padding: 20px; margin-bottom: 32px; text-align: left;">
+                    <div style="font-weight: 700; color: #1e40af; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">ℹ️</span>
+                        <span>What to Expect:</span>
+                    </div>
+                    <ul style="margin: 0; padding-left: 24px; color: #1e40af; line-height: 1.8;">
+                        <li>Your time will be tracked for each question</li>
+                        <li>You can use hints if you get stuck (tracked for analysis)</li>
+                        <li>After completing, you'll see a detailed review of your answers</li>
+                        <li>You can rate questions to help the teacher improve the quiz</li>
+                    </ul>
+                </div>
+
                 <div class="question-selector">
                     <div class="selector-label">How many questions would you like to answer?</div>
                     <div class="slider-container">
@@ -700,7 +714,7 @@
                     </div>
                 </div>
 
-                <button class="start-btn" @onclick="StartQuiz">
+                <button class="start-btn" @onclick="StartQuiz" @onclick:stopPropagation>
                     Start Quiz 🚀
                 </button>
             </div>
@@ -711,7 +725,12 @@
             <div class="quiz-header">
                 <div class="quiz-header-content">
                     <h1 class="quiz-title">@quiz.QuizName</h1>
-                    <div class="quiz-progress">@(currentQuestionIndex + 1) / @selectedQuestions.Count</div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                            ⏱️ @GetCurrentQuestionTime()s
+                        </div>
+                        <div class="quiz-progress">@(currentQuestionIndex + 1) / @selectedQuestions.Count</div>
+                    </div>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" style="width: @GetProgressPercentage()%"></div>
@@ -873,15 +892,17 @@
                         </div>
                     }
                 </div>
+
+                <!-- ✅ מערכת דירוג שאלות -->
                 <div class="review-section">
                     <h3 class="review-title">Rate the Questions ⭐</h3>
-                    <p style="color: #6b7280; margin-bottom: 20px;">Help improve the quiz by rating each question</p>
+                    <p style="color: #6b7280; margin-bottom: 20px;">Help improve the quiz by rating each question (optional)</p>
                     @for (int i = 0; i < selectedQuestions.Count; i++)
                     {
                         var q = selectedQuestions[i];
                         var qIndex = i;
                         var timeTaken = questionTimes[i];
-
+                        
                         <div class="review-item">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                                 <div class="review-question" style="flex: 1;">Q@(i + 1): @q.QuestionText</div>
@@ -894,9 +915,9 @@
                                 @for (int star = 1; star <= 5; star++)
                                 {
                                     var starValue = star;
-                                    <button @onclick="@(() => RateQuestion(qIndex, starValue))"
+                                    <button @onclick="@(() => RateQuestion(qIndex, starValue))" 
                                             style="background: none; border: none; cursor: pointer; font-size: 28px; padding: 4px; transition: transform 0.2s;"
-                                            onmouseover="this.style.transform='scale(1.2)'"
+                                            onmouseover="this.style.transform='scale(1.2)'" 
                                             onmouseout="this.style.transform='scale(1)'">
                                         @(GetQuestionRating(qIndex) >= starValue ? "⭐" : "☆")
                                     </button>
@@ -905,6 +926,7 @@
                         </div>
                     }
                 </div>
+
                 <div class="results-actions">
                     <button class="btn btn-secondary" @onclick="GoToSearch">
                         Browse Quizzes
@@ -946,6 +968,10 @@
     private List<int> questionTimes = new();
     private DateTime questionStartTime;
     private Dictionary<int, int> questionRatings = new();
+    
+    // ✅ טיימר
+    private System.Threading.Timer timer;
+    private int currentQuestionElapsedSeconds = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -1013,7 +1039,37 @@
         // ✅ אתחול מעקב
         hintsUsed = new List<bool>(new bool[selectedQuestions.Count]);
         questionTimes = new List<int>(new int[selectedQuestions.Count]);
-        questionStartTime = DateTime.Now; // ✅ התחלת טיימר לשאלה הראשונה
+        questionStartTime = DateTime.Now;
+        currentQuestionElapsedSeconds = 0;
+        
+        // ✅ הפעלת טיימר
+        StartTimer();
+    }
+
+    private void StartTimer()
+    {
+        timer?.Dispose();
+        timer = new System.Threading.Timer(async _ =>
+        {
+            currentQuestionElapsedSeconds++;
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private void StopTimer()
+    {
+        timer?.Dispose();
+        timer = null;
+    }
+
+    private string GetCurrentQuestionTime()
+    {
+        return currentQuestionElapsedSeconds.ToString();
+    }
+
+    public void Dispose()
+    {
+        StopTimer();
     }
 
     private void SelectAnswer(int index)
@@ -1066,9 +1122,9 @@
                 quiz_id = QuizId,
                 is_correct = isCorrect ? 1 : 0,
                 used_hint = hintsUsed[currentQuestionIndex] ? 1 : 0,
-                time_taken = timeTaken, // ✅ זמן בשניות
-                rating = 0,
-                score = 0, // יתעדכן בסוף
+                time_taken = timeTaken,
+                rating = 0, // ✅ יישאר 0 עד שהמשתמש ידרג
+                score = 0,
                 answered_at = DateTime.Now
             };
 
@@ -1089,7 +1145,8 @@
             answerSubmitted = false;
             showHint = false;
             correctAnswer = null;
-            questionStartTime = DateTime.Now; // ✅ התחלת טיימר לשאלה הבאה
+            questionStartTime = DateTime.Now;
+            currentQuestionElapsedSeconds = 0; // ✅ איפוס טיימר
         }
         else
         {
@@ -1099,6 +1156,7 @@
 
     private async void FinishQuiz()
     {
+        StopTimer(); // ✅ עצירת הטיימר
         quizFinished = true;
         scorePercentage = (int)Math.Round((double)correctAnswers / selectedQuestions.Count * 100);
         
@@ -1203,4 +1261,4 @@
         if (scorePercentage >= 60) return "You're on the right track. A bit more practice and you'll ace it!";
         return "Don't worry, practice makes perfect. Review the material and try again!";
     }
-    } 
+    }
