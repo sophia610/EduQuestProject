@@ -789,7 +789,7 @@
                             </span>
                             <span>
                                 <span>👥</span>
-                                <span>@GetRandomStudentCount() students</span>
+                                <span>@GetStudentCount(quiz.QuizId) students</span>
                             </span>
                         </div>
                         <div class="quiz-actions">
@@ -832,7 +832,7 @@
     </div>
 }
 @code {
-    private List<Quiz> allQuizzes; 
+    private List<Quiz> allQuizzes;
     private List<Quiz> filteredQuizzes;
     private List<string> subjects = new List<string>();
     private List<string> topics = new List<string>();
@@ -847,12 +847,16 @@
     private string errorMessage = "";
 
     private bool showDeleteModal = false;
-    private int quizToDelete = 0; 
+    private int quizToDelete = 0;
 
+    // ✅ נתונים אמיתיים
     private int totalQuizzes = 0;
-    private int totalStudents = 156;
-    private int totalCompletions = 842;
-    private int averageScore = 78;
+    private int totalStudents = 0;
+    private int totalCompletions = 0;
+    private int averageScore = 0;
+
+    // ✅ מילון לשמירת כמות תלמידים לכל חידון
+    private Dictionary<int, int> quizStudentCounts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -865,6 +869,7 @@
             {
                 teacherId = result.Value.user_id;
                 await LoadQuizzes();
+                await LoadStatistics(); // ✅ טעינת סטטיסטיקות אמיתיות
             }
             else
             {
@@ -880,6 +885,7 @@
             isLoading = false;
         }
     }
+
     private async Task LoadQuizzes()
     {
         try
@@ -914,6 +920,64 @@
         }
     }
 
+    // ✅ טעינת סטטיסטיקות אמיתיות
+    private async Task LoadStatistics()
+    {
+        try
+        {
+            var resultDb = new ResultDB();
+            var uniqueStudents = new HashSet<int>();
+            var allScores = new List<int>();
+            int completedCount = 0;
+
+            foreach (var quiz in allQuizzes)
+            {
+                // שליפת תוצאות לכל חידון
+                var quizResults = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+
+                if (quizResults.Count > 0)
+                {
+                    // ✅ ספירת תלמידים ייחודיים לחידון זה
+                    var studentsInQuiz = quizResults.Select(r => r.student_id).Distinct().ToList();
+                    quizStudentCounts[quiz.QuizId] = studentsInQuiz.Count;
+
+                    // הוספה לסך הכל תלמידים (ייחודיים)
+                    foreach (var studentId in studentsInQuiz)
+                    {
+                        uniqueStudents.Add(studentId);
+                    }
+
+                    // ✅ ספירת השלמות (תלמידים עם score > 0)
+                    var completed = quizResults.Where(r => r.score > 0)
+                                               .Select(r => r.student_id)
+                                               .Distinct()
+                                               .Count();
+                    completedCount += completed;
+
+                    // ✅ איסוף ציונים
+                    var scores = quizResults.Where(r => r.score > 0)
+                                            .GroupBy(r => r.student_id)
+                                            .Select(g => g.First().score)
+                                            .ToList();
+                    allScores.AddRange(scores);
+                }
+                else
+                {
+                    quizStudentCounts[quiz.QuizId] = 0;
+                }
+            }
+
+            // ✅ חישוב סטטיסטיקות כלליות
+            totalStudents = uniqueStudents.Count;
+            totalCompletions = completedCount;
+            averageScore = allScores.Count > 0 ? (int)allScores.Average() : 0;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading statistics: {ex.Message}");
+        }
+    }
+
     private void OnSubjectChange(ChangeEventArgs e)
     {
         selectedSubject = e.Value?.ToString() ?? "";
@@ -925,6 +989,7 @@
         selectedTopic = e.Value?.ToString() ?? "";
         FilterQuizzes();
     }
+
     private void FilterQuizzes()
     {
         if (allQuizzes == null || allQuizzes.Count == 0)
@@ -1003,29 +1068,29 @@
 
     private void ShowDeleteModal(int quizId)
     {
-        quizToDelete = quizId; 
+        quizToDelete = quizId;
         showDeleteModal = true;
     }
 
     private void HideDeleteModal()
     {
         showDeleteModal = false;
-        quizToDelete = 0; 
+        quizToDelete = 0;
     }
 
-    
     private async Task ConfirmDelete()
     {
         try
         {
             var quizDb = new QuizDB();
-            await quizDb.DeleteQuizAsync(quizToDelete); 
+            await quizDb.DeleteQuizAsync(quizToDelete);
 
             successMessage = "✅ Quiz deleted successfully!";
             errorMessage = "";
 
             HideDeleteModal();
             await LoadQuizzes();
+            await LoadStatistics(); // ✅ עדכון סטטיסטיקות
 
             await Task.Delay(3000);
             successMessage = "";
@@ -1037,9 +1102,9 @@
         }
     }
 
-    private int GetRandomStudentCount()
+    
+    private int GetStudentCount(int quizId)
     {
-        var random = new Random();
-        return random.Next(5, 45);
+        return quizStudentCounts.ContainsKey(quizId) ? quizStudentCounts[quizId] : 0;
     }
 }

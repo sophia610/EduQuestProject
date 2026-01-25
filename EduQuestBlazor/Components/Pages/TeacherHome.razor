@@ -675,9 +675,9 @@
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon blue">📝</div>
-                    <div class="stat-value">@(recentQuizzes?.Count ?? 0)</div>
-                    <div class="stat-label">Total Quizzes</div>
+                    <div class="stat-icon green">✓</div>
+                    <div class="stat-value">@GetCompletedTodayCount()</div>
+                    <div class="stat-label">Completed Today</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon purple">👥</div>
@@ -685,9 +685,9 @@
                     <div class="stat-label">Active Students</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon green">✓</div>
+                    <div class="stat-icon blue">✓</div>
                     <div class="stat-value">@GetCompletedCount()</div>
-                    <div class="stat-label">Completed Today</div>
+                    <div class="stat-label">Total Completions</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon red">⚠️</div>
@@ -753,29 +753,27 @@
             <div class="widget">
                 <div class="widget-header">
                     <h3 class="widget-title">Struggling Students</h3>
-                    <div class="widget-badge">3</div>
+                    <div class="widget-badge">@strugglingStudents.Count</div>
                 </div>
-                <div class="student-item" @onclick="@(()=>nav.NavigateTo("/student-details/1"))">
-                    <div class="student-avatar">SM</div>
-                    <div class="student-info">
-                        <div class="student-name">Sarah Miller</div>
-                        <div class="student-issue">Failed Math Quiz - 45%</div>
+                @if (strugglingStudents.Count == 0)
+                {
+                    <div style="text-align: center; padding: 20px; color: #6b7280;">
+                        <p>🎉 All students are doing well!</p>
                     </div>
-                </div>
-                <div class="student-item" @onclick="@(()=>nav.NavigateTo("/student-details/2"))">
-                    <div class="student-avatar">JD</div>
-                    <div class="student-info">
-                        <div class="student-name">John Davis</div>
-                        <div class="student-issue">Low score in Physics - 52%</div>
-                    </div>
-                </div>
-                <div class="student-item" @onclick="@(()=>nav.NavigateTo("/student-details/3"))">
-                    <div class="student-avatar">EW</div>
-                    <div class="student-info">
-                        <div class="student-name">Emma Wilson</div>
-                        <div class="student-issue">Biology Quiz incomplete</div>
-                    </div>
-                </div>
+                }
+                else
+                {
+                    @foreach (var student in strugglingStudents)
+                    {
+                        <div class="student-item" @onclick="@(()=>nav.NavigateTo($"/student-details/{student.StudentId}"))">
+                            <div class="student-avatar">@GetInitials(student.StudentName)</div>
+                            <div class="student-info">
+                                <div class="student-name">@student.StudentName</div>
+                                <div class="student-issue">@student.Issue</div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
 
             <div class="widget">
@@ -815,36 +813,29 @@
 
             <div class="widget">
                 <h3 class="widget-title">Top Performing Quizzes</h3>
-                <div class="quiz-stats-item">
-                    <div class="quiz-stat-info">
-                        <div class="quiz-stat-name">Biology Basics</div>
-                        <div class="quiz-stat-meta">24 completions</div>
+                @if (topPerformingQuizzes.Count == 0)
+                {
+                    <div style="text-align: center; padding: 20px; color: #6b7280;">
+                        <p style="font-size: 32px; margin-bottom: 8px;">📊</p>
+                        <p>No quiz data yet</p>
                     </div>
-                    <div class="quiz-stat-score">
-                        <div class="score-value">87%</div>
-                        <div class="score-label">Avg Score</div>
-                    </div>
-                </div>
-                <div class="quiz-stats-item">
-                    <div class="quiz-stat-info">
-                        <div class="quiz-stat-name">Math Practice</div>
-                        <div class="quiz-stat-meta">18 completions</div>
-                    </div>
-                    <div class="quiz-stat-score">
-                        <div class="score-value">92%</div>
-                        <div class="score-label">Avg Score</div>
-                    </div>
-                </div>
-                <div class="quiz-stats-item">
-                    <div class="quiz-stat-info">
-                        <div class="quiz-stat-name">Physics Quiz</div>
-                        <div class="quiz-stat-meta">15 completions</div>
-                    </div>
-                    <div class="quiz-stat-score">
-                        <div class="score-value">78%</div>
-                        <div class="score-label">Avg Score</div>
-                    </div>
-                </div>
+                }
+                else
+                {
+                    @foreach (var quiz in topPerformingQuizzes)
+                    {
+                        <div class="quiz-stats-item" @onclick="@(()=>nav.NavigateTo($"/quiz-details/{quiz.QuizId}"))">
+                            <div class="quiz-stat-info">
+                                <div class="quiz-stat-name">@quiz.QuizName</div>
+                                <div class="quiz-stat-meta">@quiz.Completions completions</div>
+                            </div>
+                            <div class="quiz-stat-score">
+                                <div class="score-value">@quiz.AverageScore%</div>
+                                <div class="score-label">Avg Score</div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </aside>
     </div>
@@ -855,7 +846,138 @@
     private List<Quiz> recentQuizzes;
     private bool _initialized = false;
     private bool _checkingSession = true;
+    private List<StrugglingStudent> strugglingStudents = new();
+    private List<TopQuiz> topPerformingQuizzes = new();
+    private int totalStudents = 0; 
+    private int totalCompletions = 0;
+    private int completedToday = 0;
 
+    private int GetCompletedTodayCount() => completedToday;
+    private class TopQuiz
+    {
+        public int QuizId { get; set; }
+        public string QuizName { get; set; }
+        public int Completions { get; set; }
+        public int AverageScore { get; set; }
+    }
+
+    private async Task LoadTopPerformingQuizzesAsync(int teacherId)
+    {
+        try
+        {
+            var quizDb = new QuizDB();
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
+
+            if (teacherQuizzes.Count == 0) return;
+
+            var resultDb = new ResultDB();
+            var topQuizzesList = new List<TopQuiz>();
+
+            foreach (var quiz in teacherQuizzes)
+            {
+                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+
+                if (results.Count == 0) continue;
+                var completions = results.Where(r => r.score > 0)
+                                        .Select(r => r.student_id)
+                                        .Distinct()
+                                        .Count();
+                var scores = results.Where(r => r.score > 0)
+                                   .GroupBy(r => r.student_id)
+                                   .Select(g => g.First().score)
+                                   .ToList();
+
+                int avgScore = scores.Count > 0 ? (int)scores.Average() : 0;
+
+                if (completions > 0) 
+                {
+                    topQuizzesList.Add(new TopQuiz
+                        {
+                            QuizId = quiz.QuizId,
+                            QuizName = quiz.QuizName,
+                            Completions = completions,
+                            AverageScore = avgScore
+                        });
+                }
+            }
+            topPerformingQuizzes = topQuizzesList
+                .OrderByDescending(q => q.AverageScore)
+                .ThenByDescending(q => q.Completions)
+                .Take(3) // רק 3 חידונים מובילים
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading top performing quizzes: {ex.Message}");
+        }
+    }
+    private class StrugglingStudent
+    {
+        public int StudentId { get; set; }
+        public string StudentName { get; set; }
+        public string Issue { get; set; }
+        public int Score { get; set; }
+    }
+
+    private async Task LoadStrugglingStudentsAsync(int teacherId)
+    {
+        try
+        {
+            // שליפת כל החידונים של המורה
+            var quizDb = new QuizDB();
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
+
+            var resultDb = new ResultDB();
+            var customerDb = new CustomerDB();
+
+            var studentIssues = new Dictionary<int, (string name, string issue, int score)>();
+
+            foreach (var quiz in teacherQuizzes)
+            {
+                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+                var groupedByStudent = results.GroupBy(r => r.student_id);
+
+                foreach (var group in groupedByStudent)
+                {
+                    var studentId = group.Key;
+                    var studentResults = group.ToList();
+                    var score = studentResults.FirstOrDefault()?.score ?? 0;
+                    if (score < 60 && score > 0)
+                    {
+                        if (!studentIssues.ContainsKey(studentId))
+                        {
+                            var student = await customerDb.SelectByPkAsync(studentId);
+                            if (student != null)
+                            {
+                                string issue = score < 50 ?
+                                    $"Failed {quiz.QuizName} - {score}%" :
+                                    $"Low score in {quiz.QuizName} - {score}%";
+
+                                studentIssues[studentId] = (student.FullName, issue, score);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // המרה לרשימה
+            strugglingStudents = studentIssues
+                .Select(kvp => new StrugglingStudent
+                    {
+                        StudentId = kvp.Key,
+                        StudentName = kvp.Value.name,
+                        Issue = kvp.Value.issue,
+                        Score = kvp.Value.score
+                    })
+                .OrderBy(s => s.Score) 
+                .Take(3) // רק 3 ראשונים
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading struggling students: {ex.Message}");
+        }
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || _initialized)
@@ -904,7 +1026,9 @@
     {
         var db = new QuizDB(); 
         recentQuizzes = await db.GetQuizzesByTeacherAsync(teacherId);
-        recentQuizzes = recentQuizzes.OrderByDescending(q => q.CreatedAt).ToList();
+        await LoadTeacherStatisticsAsync(teacherId);
+        await LoadStrugglingStudentsAsync(teacherId);
+        await LoadTopPerformingQuizzesAsync(teacherId);
     }
 
     private async Task Logout()
@@ -927,12 +1051,61 @@
         return name[0].ToString().ToUpper();
     }
 
-    private int GetStudentCount() => 42;
-    private int GetCompletedCount() => 18;
+    private int GetStudentCount() => totalStudents;
+    private int GetCompletedCount() => totalCompletions;
 
     private int GetRandomStudentCount()
     {
         var random = new Random();
         return random.Next(8, 35);
+    }
+    private async Task LoadTeacherStatisticsAsync(int teacherId)
+    {
+        try
+        {
+            var quizDb = new QuizDB();
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
+
+            if (teacherQuizzes.Count == 0) return;
+
+            var resultDb = new ResultDB();
+            var uniqueStudents = new HashSet<int>();
+            int completions = 0;
+            var today = DateTime.Today;
+            foreach (var quiz in teacherQuizzes)
+            {
+                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+
+                completedToday += results.Where(r => r.score > 0 && r.answered_at.Date == today)
+                                        .Select(r => r.student_id)
+                                        .Distinct()
+                                        .Count();
+            }
+
+            foreach (var quiz in teacherQuizzes)
+            {
+                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+
+                if (results.Count > 0)
+                {
+                    var studentsInQuiz = results.Select(r => r.student_id).Distinct();
+                    foreach (var studentId in studentsInQuiz)
+                    {
+                        uniqueStudents.Add(studentId);
+                    }
+                    completions += results.Where(r => r.score > 0)
+                                         .Select(r => r.student_id)
+                                         .Distinct()
+                                         .Count();
+                }
+            }
+
+            totalStudents = uniqueStudents.Count;
+            totalCompletions = completions;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading teacher statistics: {ex.Message}");
+        }
     }
 }

@@ -514,7 +514,7 @@
     private List<Quiz> filteredQuizzes = new();
     private List<Subject> subjects = new();
     private List<Topic> topics = new();
-    private Dictionary<int, string> teacherNames = new(); // ✅ שמות מורים
+    private Dictionary<int, string> teacherNames = new(); //  שמות מורים
 
     private string searchQuery = "";
     private int selectedSubject = 0;
@@ -538,7 +538,7 @@
             var quizDb = new QuizDB();
             allQuizzes = await quizDb.GetAllQuizzesAsync();
 
-            // ✅ טעינת שמות מורים
+            //  טעינת שמות מורים
             var customerDb = new CustomerDB();
             var uniqueTeacherIds = allQuizzes.Select(q => q.TeacherId).Distinct().ToList();
             foreach (var teacherId in uniqueTeacherIds)

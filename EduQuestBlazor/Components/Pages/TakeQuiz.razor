@@ -691,7 +691,7 @@
                     </div>
                 </div>
 
-                <!-- ✅ מידע נוסף -->
+                <!--  מידע נוסף -->
                 <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 16px; padding: 20px; margin-bottom: 32px; text-align: left;">
                     <div style="font-weight: 700; color: #1e40af; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 20px;">ℹ️</span>
@@ -893,7 +893,7 @@
                     }
                 </div>
 
-                <!-- ✅ מערכת דירוג שאלות -->
+                
                 <div class="review-section">
                     <h3 class="review-title">Rate the Questions ⭐</h3>
                     <p style="color: #6b7280; margin-bottom: 20px;">Help improve the quiz by rating each question (optional)</p>
@@ -962,20 +962,19 @@
     private int scorePercentage = 0;
     private Answer correctAnswer;
 
-    // ✅ מעקב אחר זמן ומשתמש
+    //  מעקב אחר זמן ומשתמש
     private int currentStudentId = 0;
     private List<bool> hintsUsed = new();
     private List<int> questionTimes = new();
     private DateTime questionStartTime;
     private Dictionary<int, int> questionRatings = new();
     
-    // ✅ טיימר
+    //  טיימר
     private System.Threading.Timer timer;
     private int currentQuestionElapsedSeconds = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        // ✅ שליפת המשתמש המחובר
         try
         {
             var result = await session.GetAsync<Customers>("user");
@@ -1036,13 +1035,13 @@
         correctAnswers = 0;
         userAnswers.Clear();
         
-        // ✅ אתחול מעקב
+        //  אתחול מעקב
         hintsUsed = new List<bool>(new bool[selectedQuestions.Count]);
         questionTimes = new List<int>(new int[selectedQuestions.Count]);
         questionStartTime = DateTime.Now;
         currentQuestionElapsedSeconds = 0;
         
-        // ✅ הפעלת טיימר
+        //  הפעלת טיימר
         StartTimer();
     }
 
@@ -1083,14 +1082,14 @@
     private void ShowHint()
     {
         showHint = true;
-        hintsUsed[currentQuestionIndex] = true; // ✅ סימון שהשתמש ברמז
+        hintsUsed[currentQuestionIndex] = true; //  סימון שהשתמש ברמז
     }
 
     private async Task SubmitAnswer()
     {
         if (selectedAnswerIndex == -1) return;
 
-        // ✅ חישוב זמן שלקח לענות על השאלה
+        //  חישוב זמן שלקח לענות על השאלה
         var timeTaken = (int)(DateTime.Now - questionStartTime).TotalSeconds;
         questionTimes[currentQuestionIndex] = timeTaken;
 
@@ -1106,7 +1105,7 @@
             correctAnswers++;
         }
 
-        // ✅ שמירת התוצאה במסד נתונים
+        //  שמירת התוצאה במסד נתונים
         await SaveResultAsync(currentQ, isCorrect, timeTaken);
     }
 
@@ -1123,7 +1122,7 @@
                 is_correct = isCorrect ? 1 : 0,
                 used_hint = hintsUsed[currentQuestionIndex] ? 1 : 0,
                 time_taken = timeTaken,
-                rating = 0, // ✅ יישאר 0 עד שהמשתמש ידרג
+                rating = 0, 
                 score = 0,
                 answered_at = DateTime.Now
             };
@@ -1146,7 +1145,7 @@
             showHint = false;
             correctAnswer = null;
             questionStartTime = DateTime.Now;
-            currentQuestionElapsedSeconds = 0; // ✅ איפוס טיימר
+            currentQuestionElapsedSeconds = 0; //  איפוס טיימר
         }
         else
         {
@@ -1156,11 +1155,11 @@
 
     private async void FinishQuiz()
     {
-        StopTimer(); // ✅ עצירת הטיימר
+        StopTimer(); //  עצירת הטיימר
         quizFinished = true;
         scorePercentage = (int)Math.Round((double)correctAnswers / selectedQuestions.Count * 100);
         
-        // ✅ שמירת הציון הסופי במסד נתונים
+        //  שמירת הציון הסופי במסד נתונים
         await SaveFinalScoreAsync();
     }
 
@@ -1193,7 +1192,7 @@
         questionRatings.Clear();
     }
 
-    // ✅ פונקציות דירוג
+    //  פונקציות דירוג
     private void RateQuestion(int questionIndex, int rating)
     {
         questionRatings[questionIndex] = rating;

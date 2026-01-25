@@ -1,0 +1,863 @@
+﻿@page "/student-quizzes"
+@using DBL
+@using Models
+@inject NavigationManager nav
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+
+<PageTitle>Your Library | EduQuest</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .dashboard {
+        display: flex;
+        min-height: 100vh;
+        background: #f5f7fa;
+    }
+
+    .sidebar {
+        width: 240px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding: 0 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        text-align: left;
+        font-weight: 500;
+    }
+
+        .sidebar-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .sidebar-item.active {
+            background: #eef2ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .sidebar-item span:first-child {
+            font-size: 20px;
+        }
+
+    .main-content {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+    }
+
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .page-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: #1f2937;
+        margin: 0 0 8px 0;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: #6b7280;
+    }
+
+    .tabs-container {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        padding: 6px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 14px 24px;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+        .tab-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+    .filters-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        gap: 16px;
+        align-items: end;
+    }
+
+    .filter-group {
+        flex: 1;
+    }
+
+    .filter-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        background: #f9fafb;
+        cursor: pointer;
+    }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 16px 12px 44px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        background: #f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E") no-repeat 14px center;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: white;
+        }
+
+    .quizzes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+    }
+
+    .quiz-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+
+        .quiz-card.completed {
+            border-color: #86efac;
+        }
+
+            .quiz-card.completed::before {
+                background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            }
+
+    .quiz-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 16px;
+    }
+
+    .quiz-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+        .quiz-badge.available {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .quiz-badge.completed {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+    .quiz-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .quiz-description {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 16px;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .quiz-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #9ca3af;
+        margin-bottom: 16px;
+    }
+
+        .quiz-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    .quiz-score-bar {
+        margin-bottom: 16px;
+    }
+
+    .score-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+        .score-label .score {
+            color: #667eea;
+        }
+
+    .score-bar-bg {
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .score-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 3px;
+        transition: width 0.5s;
+    }
+
+    .quiz-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-start {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-retake {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+        .btn-retake:hover {
+            background: #dcfce7;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .empty-icon {
+        font-size: 80px;
+        margin-bottom: 24px;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .empty-text {
+        font-size: 16px;
+        color: #6b7280;
+        margin-bottom: 32px;
+    }
+
+    .browse-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+    .loading-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e5e7eb;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 16px;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .stats-summary {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            <div class="logo-text">EduQuest</div>
+        </div>
+        <div class="sidebar-menu">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/student-home"))">
+                <span>🏠</span>
+                <span>Home</span>
+            </button>
+            <button class="sidebar-item active">
+                <span>📚</span>
+                <span>Your Library</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/notifications"))">
+                <span>🔔</span>
+                <span>Notifications</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/progress"))">
+                <span>📊</span>
+                <span>Progress</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profile-student"))">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/search-quizzes"))">
+                <span>🔍</span>
+                <span>Search Quizzes</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Your Quiz Library</h1>
+            <p class="page-subtitle">Browse all available quizzes and track your progress</p>
+        </div>
+
+        @if (!isLoading)
+        {
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <div class="stat-value">@totalAvailable</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">@totalCompleted</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">@averageScore%</div>
+                    <div class="stat-label">Avg Score</div>
+                </div>
+            </div>
+        }
+
+        <div class="tabs-container">
+            <button class="tab-btn @(currentTab == "all" ? "active" : "")" @onclick="@(() => SwitchTab("all"))">
+                <span>📚</span>
+                <span>All Quizzes</span>
+            </button>
+            <button class="tab-btn @(currentTab == "completed" ? "active" : "")" @onclick="@(() => SwitchTab("completed"))">
+                <span>✓</span>
+                <span>Completed</span>
+            </button>
+            <button class="tab-btn @(currentTab == "available" ? "active" : "")" @onclick="@(() => SwitchTab("available"))">
+                <span>📝</span>
+                <span>Not Started</span>
+            </button>
+        </div>
+
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label class="filter-label">Subject</label>
+                <select class="filter-select" value="@selectedSubject" @onchange="OnSubjectChanged">
+                    <option value="0">All Subjects</option>
+                    @if (subjects != null)
+                    {
+                        @foreach (var subject in subjects)
+                        {
+                            <option value="@subject.subject_id">@subject.subject_name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Topic</label>
+                <select class="filter-select" value="@selectedTopic" @onchange="OnTopicChanged" disabled="@(selectedSubject == 0)">
+                    <option value="0">All Topics</option>
+                    @if (topics != null)
+                    {
+                        @foreach (var topic in topics)
+                        {
+                            <option value="@topic.topic_id">@topic.topic_name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="filter-group" style="flex: 2;">
+                <label class="filter-label">Search</label>
+                <input type="text" class="search-input" placeholder="Search quizzes..."
+                       @bind="searchQuery" @bind:event="oninput" @onkeyup="FilterQuizzes" />
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p style="color: #6b7280;">Loading quizzes...</p>
+            </div>
+        }
+        else if (filteredQuizzes.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    @if (currentTab == "completed")
+                    {
+                        <text>📭</text>
+                    }
+                    else
+                    {
+                        <text>🔍</text>
+                    }
+                </div>
+                <h2 class="empty-title">
+                    @if (currentTab == "completed")
+                    {
+                        <text>No Completed Quizzes Yet</text>
+                    }
+                    else
+                    {
+                        <text>No Quizzes Found</text>
+                    }
+                </h2>
+                <p class="empty-text">
+                    @if (currentTab == "completed")
+                    {
+                        <text>Start taking quizzes to see your completed work here!</text>
+                    }
+                    else
+                    {
+                        <text>Try adjusting your filters or search for different topics</text>
+                    }
+                </p>
+                <button class="browse-btn" @onclick="@(() => nav.NavigateTo("/search-quizzes"))">
+                    <span>🔍</span>
+                    <span>Browse All Quizzes</span>
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="quizzes-grid">
+                @foreach (var quiz in filteredQuizzes)
+                {
+                    var isCompleted = completedQuizIds.Contains(quiz.QuizId);
+                    var score = quizScores.ContainsKey(quiz.QuizId) ? quizScores[quiz.QuizId] : 0;
+
+                    <div class="quiz-card @(isCompleted ? "completed" : "")" @onclick="@(() => StartQuiz(quiz.QuizId))">
+                        <div class="quiz-header">
+                            <span class="quiz-badge @(isCompleted ? "completed" : "available")">
+                                @(isCompleted ? "Completed" : "Available")
+                            </span>
+                        </div>
+                        <div class="quiz-name">@quiz.QuizName</div>
+                        <div class="quiz-description">@(string.IsNullOrEmpty(quiz.Description) ? "Test your knowledge" : quiz.Description)</div>
+                        <div class="quiz-meta">
+                            <span>
+                                <span>📝</span>
+                                <span>@(quiz.Questions?.Count ?? 0) questions</span>
+                            </span>
+                            <span>
+                                <span>📚</span>
+                                <span>@GetSubjectName(quiz.SubjectId)</span>
+                            </span>
+                        </div>
+
+                        @if (isCompleted)
+                        {
+                            <div class="quiz-score-bar">
+                                <div class="score-label">
+                                    <span>Your Score</span>
+                                    <span class="score">@score%</span>
+                                </div>
+                                <div class="score-bar-bg">
+                                    <div class="score-bar-fill" style="width: @score%"></div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="quiz-actions">
+                            @if (isCompleted)
+                            {
+                                <button class="action-btn btn-retake" @onclick:stopPropagation @onclick="@(() => StartQuiz(quiz.QuizId))">
+                                    <span>🔄</span>
+                                    <span>Retake</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="action-btn btn-start" @onclick:stopPropagation @onclick="@(() => StartQuiz(quiz.QuizId))">
+                                    <span>▶</span>
+                                    <span>Start Quiz</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    private List<Quiz> allQuizzes = new();
+    private List<Quiz> filteredQuizzes = new();
+    private List<Subject> subjects = new();
+    private List<Topic> topics = new();
+    private HashSet<int> completedQuizIds = new();
+    private Dictionary<int, int> quizScores = new();
+
+    private string currentTab = "all";
+    private int selectedSubject = 0;
+    private int selectedTopic = 0;
+    private string searchQuery = "";
+    private bool isLoading = true;
+    private int studentId = 0;
+
+    // סטטיסטיקות
+    private int totalAvailable = 0;
+    private int totalCompleted = 0;
+    private int averageScore = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                studentId = result.Value.user_id;
+                await LoadDataAsync();
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+            }
+        }
+        catch
+        {
+            nav.NavigateTo("/login");
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            isLoading = true;
+
+            //  טעינת כל החידונים
+            var quizDb = new QuizDB();
+            allQuizzes = await quizDb.GetAllQuizzesAsync();
+
+            //  טעינת תוצאות התלמיד
+            var resultDb = new ResultDB();
+            var studentResults = await resultDb.GetAllStudentResultsAsync(studentId);
+
+            //  זיהוי חידונים שהושלמו
+            var completedQuizzes = studentResults.Where(r => r.score > 0)
+                                                 .GroupBy(r => r.quiz_id)
+                                                 .Select(g => new { QuizId = g.Key, Score = g.First().score });
+
+            foreach (var completed in completedQuizzes)
+            {
+                completedQuizIds.Add(completed.QuizId);
+                quizScores[completed.QuizId] = completed.Score;
+            }
+
+            //  חישוב סטטיסטיקות
+            totalAvailable = allQuizzes.Count;
+            totalCompleted = completedQuizIds.Count;
+            averageScore = quizScores.Count > 0 ? (int)quizScores.Values.Average() : 0;
+
+            //  טעינת מקצועות
+            var subjectDb = new SubjectDB();
+            subjects = await subjectDb.GetAllSubjectsAsync();
+
+            filteredQuizzes = allQuizzes.ToList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SwitchTab(string tab)
+    {
+        currentTab = tab;
+        FilterQuizzes();
+    }
+
+    private async Task OnSubjectChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int subjectId))
+        {
+            selectedSubject = subjectId;
+            selectedTopic = 0;
+
+            if (subjectId > 0)
+            {
+                var topicDb = new TopicDB();
+                topics = await topicDb.GetBySubjectAsync(subjectId);
+            }
+            else
+            {
+                topics = new List<Topic>();
+            }
+
+            FilterQuizzes();
+        }
+    }
+
+    private void OnTopicChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int topicId))
+        {
+            selectedTopic = topicId;
+            FilterQuizzes();
+        }
+    }
+
+    private void FilterQuizzes()
+    {
+        filteredQuizzes = allQuizzes.Where(q =>
+        {
+            // סינון לפי טאב
+            bool matchesTab = currentTab switch
+            {
+                "completed" => completedQuizIds.Contains(q.QuizId),
+                "available" => !completedQuizIds.Contains(q.QuizId),
+                _ => true
+            };
+
+            // סינון לפי מקצוע
+            bool matchesSubject = selectedSubject == 0 || q.SubjectId == selectedSubject;
+
+            // סינון לפי נושא
+            bool matchesTopic = selectedTopic == 0 || q.TopicId == selectedTopic;
+
+            // סינון לפי חיפוש
+            bool matchesSearch = string.IsNullOrEmpty(searchQuery) ||
+                                 q.QuizName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                                 (q.Description != null && q.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+
+            return matchesTab && matchesSubject && matchesTopic && matchesSearch;
+        }).ToList();
+
+        StateHasChanged();
+    }
+
+    private string GetSubjectName(int subjectId)
+    {
+        var subject = subjects.FirstOrDefault(s => s.subject_id == subjectId);
+        return subject?.subject_name ?? "General";
+    }
+
+    private void StartQuiz(int quizId)
+    {
+        nav.NavigateTo($"/take-quiz/{quizId}");
+    }
+}

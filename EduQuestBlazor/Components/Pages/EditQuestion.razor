@@ -596,7 +596,7 @@
         {
             isLoading = true;
 
-            // ✅ בדיקת הרשאות - שליפת המשתמש המחובר
+            //  בדיקת הרשאות - שליפת המשתמש המחובר
             var result = await session.GetAsync<Customers>("user");
             if (!result.Success || result.Value == null)
             {
@@ -610,14 +610,14 @@
             var db = new QuestionDB();
             question = await db.GetQuestionWithAnswersAsync(QuestionId);
 
-            // ✅ בדיקה שהשאלה קיימת
+            //  בדיקה שהשאלה קיימת
             if (question == null)
             {
                 isLoading = false;
                 return;
             }
 
-            // ✅ בדיקה שהמשתמש הנוכחי הוא המורה שיצר את השאלה
+            //  בדיקה שהמשתמש הנוכחי הוא המורה שיצר את השאלה
             if (question.TeacherID != currentTeacherId)
             {
                 accessDenied = true;
@@ -743,7 +743,7 @@
             // עדכון/הוספת תשובות
             foreach (var answer in question.Answers.Where(a => !string.IsNullOrWhiteSpace(a.AnswerText)))
             {
-                // ✅ וודא שה-Explanation לא null
+                //  וודא שה-Explanation לא null
                 if (string.IsNullOrEmpty(answer.Explanation))
                 {
                     answer.Explanation = "";

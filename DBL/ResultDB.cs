@@ -22,14 +22,14 @@
                 quiz_id = Convert.ToInt32(row[3]),
                 is_correct = Convert.ToInt32(row[4]),
                 used_hint = Convert.ToInt32(row[5]),
-                time_taken = Convert.ToInt32(row[6]), // ✅
+                time_taken = Convert.ToInt32(row[6]), 
                 rating = row[7] != DBNull.Value ? Convert.ToInt32(row[7]) : 0,
-                score = row[8] != DBNull.Value ? Convert.ToInt32(row[8]) : 0, // ✅
+                score = row[8] != DBNull.Value ? Convert.ToInt32(row[8]) : 0, 
                 answered_at = row[9] != DBNull.Value ? Convert.ToDateTime(row[9]) : DateTime.Now
             };
         }
 
-        // ✅ שמירת תשובת תלמיד לשאלה
+        // שמירת תשובת תלמיד לשאלה
         public async Task<Result> InsertResultAsync(Result result)
         {
             Dictionary<string, object> values = new()
@@ -39,16 +39,16 @@
         { "quiz_id", result.quiz_id },
         { "is_correct", result.is_correct },
         { "used_hint", result.used_hint },
-        { "time_taken", result.time_taken }, // ✅
+        { "time_taken", result.time_taken }, 
         { "rating", result.rating },
-        { "score", result.score }, // ✅
+        { "score", result.score }, 
         { "answered_at", DateTime.Now }
     };
 
             return await base.InsertGetObjAsync(values);
         }
 
-        // ✅ שמירת ציון סופי של חידון (עדכון כל התוצאות של החידון)
+        //  שמירת ציון סופי של חידון (עדכון כל התוצאות של החידון)
         public async Task UpdateQuizScoreAsync(int studentId, int quizId, int score)
         {
             Dictionary<string, object> values = new()
@@ -103,14 +103,14 @@
             return await SelectAllAsync(filter);
         }
 
-        // ✅ בדיקה האם תלמיד כבר פתר חידון
+        //  בדיקה האם תלמיד כבר פתר חידון
         public async Task<bool> HasStudentTakenQuizAsync(int studentId, int quizId)
         {
             var results = await GetStudentQuizResultsAsync(studentId, quizId);
             return results.Count > 0;
         }
 
-        // ✅ חישוב ציון של תלמיד בחידון
+        //  חישוב ציון של תלמיד בחידון
         public async Task<int> CalculateQuizScoreAsync(int studentId, int quizId)
         {
             var results = await GetStudentQuizResultsAsync(studentId, quizId);
@@ -120,7 +120,7 @@
             return (int)Math.Round((double)correctAnswers / results.Count * 100);
         }
 
-        // ✅ שליפת כל התוצאות של תלמיד (כל החידונים)
+        //  שליפת כל התוצאות של תלמיד (כל החידונים)
         public async Task<List<Result>> GetAllStudentResultsAsync(int studentId)
         {
             Dictionary<string, object> filter = new()
@@ -138,7 +138,7 @@
             return await SelectAllAsync(filter);
         }
 
-        // ✅ סטטיסטיקות לשאלה - כמה תלמידים ענו נכון/שגוי
+        //  סטטיסטיקות לשאלה - כמה תלמידים ענו נכון/שגוי
         public async Task<Dictionary<string, int>> GetQuestionStatsAsync(int questionId)
         {
             Dictionary<string, object> filter = new()
@@ -157,7 +157,7 @@
             };
         }
 
-        // ✅ דירוג ממוצע של שאלה
+        //  דירוג ממוצע של שאלה
         public async Task<double> GetQuestionAverageRatingAsync(int questionId)
         {
             Dictionary<string, object> filter = new()
@@ -170,7 +170,7 @@
             return rated.Count > 0 ? rated.Average(r => r.rating) : 0;
         }
 
-        // ✅ עדכון דירוג שאלה
+        //  עדכון דירוג שאלה
         public async Task<int> UpdateRatingAsync(int resultId, int rating)
         {
             Dictionary<string, object> values = new()

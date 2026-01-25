@@ -14,9 +14,9 @@ namespace Models
         public int quiz_id { get; set; }
         public int is_correct { get; set; }
         public int used_hint { get; set; }
-        public int time_taken { get; set; } // ✅ זמן בשניות
+        public int time_taken { get; set; } //  זמן בשניות
         public int rating { get; set; }
-        public int score { get; set; } // ✅ ציון החידון באחוזים
+        public int score { get; set; } //  ציון החידון באחוזים
         public DateTime answered_at { get; set; }
 
         public Result() { }
