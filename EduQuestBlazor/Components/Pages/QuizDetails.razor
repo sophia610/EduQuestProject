@@ -669,12 +669,29 @@
     private bool showDeleteModal = false;
     private bool showDeleteQuestionModal = false;
     private int questionToDelete = 0;
+    private bool accessDenied = false;
+    private int currentTeacherId = 0;
     private int studentsAttempted = 0;
     private int studentsCompleted = 0;
     private int averageScore = 0;
 
     protected override async Task OnInitializedAsync()
     {
+        var result = await session.GetAsync<Customers>("user");
+        if (!result.Success || result.Value == null)
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
+        var currentUser = result.Value;
+        if (currentUser.Role != 1)
+        {
+            nav.NavigateTo("/student-home");
+            return;
+        }
+
+        currentTeacherId = currentUser.user_id;
         await LoadQuizAsync();
     }
 
@@ -687,6 +704,12 @@
             quiz = await db.GetQuizWithQuestionsAsync(QuizId);
             if (quiz != null)
             {
+                if (quiz.TeacherId != currentTeacherId)
+                {
+                    accessDenied = true;
+                    isLoading = false;
+                    return;
+                }
                 await LoadStatisticsAsync();
             }
         }
