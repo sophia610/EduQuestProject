@@ -1,0 +1,890 @@
+﻿@page "/my-results"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+@inject NavigationManager nav
+@using Models
+@using DBL
+
+<PageTitle>EduQuest | My Results</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .dashboard {
+        display: flex;
+        height: 100vh;
+        background: #f5f7fa;
+    }
+
+    .sidebar {
+        width: 240px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding: 0 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        text-align: left;
+        font-weight: 500;
+    }
+
+        .sidebar-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .sidebar-item.active {
+            background: #eef2ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .sidebar-item span:first-child {
+            font-size: 20px;
+        }
+
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 32px;
+    }
+
+    .header {
+        margin-bottom: 32px;
+    }
+
+    .greeting {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .greeting-sub {
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 32px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .summary-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+        .summary-icon.purple {
+            background: #f3f4ff;
+        }
+
+        .summary-icon.green {
+            background: #f0fdf4;
+        }
+
+        .summary-icon.blue {
+            background: #eff6ff;
+        }
+
+        .summary-icon.orange {
+            background: #fff7ed;
+        }
+
+    .summary-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 4px;
+    }
+
+    .summary-label {
+        font-size: 14px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .results-container {
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 24px;
+    }
+
+    .quiz-result-card {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 16px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+        .quiz-result-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .quiz-result-card.expanded {
+            border-color: #667eea;
+            background: white;
+        }
+
+    .quiz-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .quiz-info {
+        flex: 1;
+    }
+
+    .quiz-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .quiz-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+        .quiz-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+    .quiz-score {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .score-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        position: relative;
+    }
+
+        .score-circle.excellent {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .score-circle.good {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .score-circle.average {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .score-circle.poor {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+    .score-label {
+        font-size: 12px;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .expand-icon {
+        font-size: 20px;
+        color: #667eea;
+        transition: transform 0.3s;
+    }
+
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+    .quiz-details {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 2px solid #e5e7eb;
+    }
+
+    .question-item {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 16px;
+    }
+
+    .question-number {
+        background: #667eea;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .question-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+        .question-status.correct {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .question-status.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+    .question-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
+
+    .answer-option {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+        transition: all 0.2s;
+    }
+
+        .answer-option.selected {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .answer-option.correct {
+            border-color: #10b981;
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .answer-option.incorrect {
+            border-color: #ef4444;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+    .answer-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .answer-text {
+        flex: 1;
+    }
+
+    .explanation-box {
+        margin-top: 16px;
+        padding: 16px;
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+    }
+
+    .explanation-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #92400e;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .explanation-text {
+        font-size: 14px;
+        color: #78350f;
+        line-height: 1.6;
+    }
+
+    .hint-box {
+        margin-top: 12px;
+        padding: 12px;
+        background: #f0f9ff;
+        border-left: 4px solid #3b82f6;
+        border-radius: 8px;
+    }
+
+    .hint-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e40af;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .hint-text {
+        font-size: 13px;
+        color: #1e3a8a;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .empty-description {
+        font-size: 15px;
+        color: #9ca3af;
+        margin-bottom: 24px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+    }
+
+    @@media (max-width: 1024px) {
+        .summary-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            <div class="logo-text">EduQuest</div>
+        </div>
+        <div class="sidebar-menu">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/student-home"))">
+                <span>🏠</span>
+                <span>Home</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/student-quizzes"))">
+                <span>📚</span>
+                <span>Your Library</span>
+            </button>
+            <button class="sidebar-item active">
+                <span>📊</span>
+                <span>My Results</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/notifications"))">
+                <span>🔔</span>
+                <span>Notifications</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/progress"))">
+                <span>📈</span>
+                <span>Progress</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profile-student"))">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-container">
+        <div class="header">
+            <h1 class="greeting">My Quiz Results</h1>
+            <p class="greeting-sub">Review your completed quizzes and track your progress</p>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="loading">
+                <div class="empty-icon">⏳</div>
+                <p>Loading your results...</p>
+            </div>
+        }
+        else if (completedQuizzes == null || completedQuizzes.Count == 0)
+        {
+            <div class="results-container">
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3 class="empty-title">No Quiz Results Yet</h3>
+                    <p class="empty-description">Start taking quizzes to see your results and track your progress!</p>
+                    <button class="btn-primary" @onclick="@(()=>nav.NavigateTo("/student-quizzes"))">
+                        <span>📚</span>
+                        <span>Browse Quizzes</span>
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-icon purple">📝</div>
+                    <div class="summary-value">@completedQuizzes.Count</div>
+                    <div class="summary-label">Quizzes Taken</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon green">⭐</div>
+                    <div class="summary-value">@overallAverageScore%</div>
+                    <div class="summary-label">Average Score</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon blue">✓</div>
+                    <div class="summary-value">@totalQuestionsAnswered</div>
+                    <div class="summary-label">Questions Answered</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon orange">🎯</div>
+                    <div class="summary-value">@overallAccuracy%</div>
+                    <div class="summary-label">Accuracy Rate</div>
+                </div>
+            </div>
+
+            <div class="results-container">
+                <h2 class="section-title">Completed Quizzes (@completedQuizzes.Count)</h2>
+
+                @foreach (var quizResult in completedQuizzes)
+                {
+                    <div class="quiz-result-card @(expandedQuizId == quizResult.QuizId ? "expanded" : "")"
+                         @onclick="@(() => ToggleQuizExpansion(quizResult.QuizId))">
+                        <div class="quiz-header">
+                            <div class="quiz-info">
+                                <div class="quiz-name">@quizResult.QuizName</div>
+                                <div class="quiz-meta">
+                                    <span>📅 @quizResult.CompletedAt.ToString("MMM dd, yyyy")</span>
+                                    <span>⏱️ @quizResult.TotalTimeSpent minutes</span>
+                                    <span>📝 @quizResult.TotalQuestions questions</span>
+                                    <span>✓ @quizResult.CorrectAnswers correct</span>
+                                </div>
+                            </div>
+                            <div class="quiz-score">
+                                <div class="score-circle @GetScoreClass(quizResult.Score)">
+                                    @quizResult.Score%
+                                </div>
+                                <span class="score-label">Score</span>
+                            </div>
+                            <span class="expand-icon @(expandedQuizId == quizResult.QuizId ? "rotated" : "")">
+                                ▼
+                            </span>
+                        </div>
+
+                        @if (expandedQuizId == quizResult.QuizId)
+                        {
+                            <div class="quiz-details" @onclick:stopPropagation="true">
+                                @foreach (var question in quizResult.Questions)
+                                {
+                                    <div class="question-item">
+                                        <div class="question-header">
+                                            <div class="question-number">@question.QuestionNumber</div>
+                                            <div class="question-status @(question.IsCorrect ? "correct" : "incorrect")">
+                                                <span>@(question.IsCorrect ? "✓" : "✗")</span>
+                                                <span>@(question.IsCorrect ? "Correct" : "Incorrect")</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="question-text">@question.QuestionText</div>
+
+                                        @foreach (var answer in question.Answers)
+                                        {
+                                            <div class="answer-option @GetAnswerClass(answer, question)">
+                                                <span class="answer-icon">@GetAnswerIcon(answer, question)</span>
+                                                <span class="answer-text">@answer.AnswerText</span>
+                                            </div>
+                                        }
+
+                                        @if (!string.IsNullOrEmpty(question.CorrectAnswer?.Explanation))
+                                        {
+                                            <div class="explanation-box">
+                                                <div class="explanation-title">
+                                                    <span>💡</span>
+                                                    <span>Explanation</span>
+                                                </div>
+                                                <div class="explanation-text">@question.CorrectAnswer.Explanation</div>
+                                            </div>
+                                        }
+
+                                        @if (question.UsedHint && !string.IsNullOrEmpty(question.HintText))
+                                        {
+                                            <div class="hint-box">
+                                                <div class="hint-title">
+                                                    <span>💭</span>
+                                                    <span>Hint Used</span>
+                                                </div>
+                                                <div class="hint-text">@question.HintText</div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    private int studentId = 0;
+    private bool isLoading = true;
+    private int? expandedQuizId = null;
+
+    private List<QuizResultViewModel> completedQuizzes;
+    private int overallAverageScore = 0;
+    private int totalQuestionsAnswered = 0;
+    private int overallAccuracy = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                studentId = result.Value.user_id;
+                await LoadResults();
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
+            nav.NavigateTo("/login");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadResults()
+    {
+        try
+        {
+            var resultDb = new ResultDB();
+            var quizDb = new QuizDB();
+            var questionDb = new QuestionDB();
+            var answerDb = new AnswerDB();
+
+            // שליפת כל התוצאות של התלמיד
+            var allResults = await resultDb.GetAllStudentResultsAsync(studentId);
+
+            if (allResults.Count == 0)
+            {
+                completedQuizzes = new List<QuizResultViewModel>();
+                return;
+            }
+
+            // קיבוץ לפי חידונים
+            var quizGroups = allResults.GroupBy(r => r.quiz_id).ToList();
+            completedQuizzes = new List<QuizResultViewModel>();
+
+            foreach (var quizGroup in quizGroups)
+            {
+                var quiz = await quizDb.GetQuizWithQuestionsAsync(quizGroup.Key);
+                if (quiz == null) continue;
+
+                var quizResults = quizGroup.ToList();
+                int correctAnswers = quizResults.Count(r => r.is_correct == 1);
+                int score = (int)Math.Round((double)correctAnswers / quizResults.Count * 100);
+                int totalTime = (int)Math.Round(quizResults.Sum(r => r.time_taken) / 60.0);
+
+                var quizResultVM = new QuizResultViewModel
+                    {
+                        QuizId = quiz.QuizId,
+                        QuizName = quiz.QuizName,
+                        Score = score,
+                        TotalQuestions = quizResults.Count,
+                        CorrectAnswers = correctAnswers,
+                        CompletedAt = quizResults.Max(r => r.answered_at),
+                        TotalTimeSpent = totalTime,
+                        Questions = new List<QuestionResultViewModel>()
+                    };
+
+                // טעינת שאלות ותשובות
+                int questionNumber = 1;
+                foreach (var result in quizResults)
+                {
+                    var question = await questionDb.GetQuestionByIdAsync(result.question_id);
+                    if (question == null) continue;
+
+                    var answers = await answerDb.GetAnswersByQuestionIdAsync(result.question_id);
+                    var correctAnswer = answers.FirstOrDefault(a => a.IsCorrect);
+
+                    var questionVM = new QuestionResultViewModel
+                        {
+                            QuestionNumber = questionNumber++,
+                            QuestionText = question.QuestionText,
+                            IsCorrect = result.is_correct == 1,
+                            UsedHint = result.used_hint == 1,
+                            HintText = question.Hint,
+                            Answers = answers,
+                            CorrectAnswer = correctAnswer,
+                            StudentAnswerId = GetStudentAnswerId(result, answers)
+                        };
+
+                    quizResultVM.Questions.Add(questionVM);
+                }
+
+                completedQuizzes.Add(quizResultVM);
+            }
+
+            // מיון לפי תאריך (החדשים ראשון)
+            completedQuizzes = completedQuizzes.OrderByDescending(q => q.CompletedAt).ToList();
+
+            // חישוב סטטיסטיקות כלליות
+            CalculateOverallStats(allResults);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading results: {ex.Message}");
+            completedQuizzes = new List<QuizResultViewModel>();
+        }
+    }
+
+    private int GetStudentAnswerId(Result result, List<Answer> answers)
+    {
+        // אם התשובה נכונה, מחזירים את התשובה הנכונה
+        if (result.is_correct == 1)
+        {
+            return answers.FirstOrDefault(a => a.IsCorrect)?.AnswerId ?? 0;
+        }
+        // אחרת, נניח שהתשובה הראשונה הלא נכונה
+        return answers.FirstOrDefault(a => !a.IsCorrect)?.AnswerId ?? 0;
+    }
+
+    private void CalculateOverallStats(List<Result> allResults)
+    {
+        totalQuestionsAnswered = allResults.Count;
+
+        if (totalQuestionsAnswered > 0)
+        {
+            int totalCorrect = allResults.Count(r => r.is_correct == 1);
+            overallAccuracy = (int)Math.Round((double)totalCorrect / totalQuestionsAnswered * 100);
+        }
+
+        if (completedQuizzes.Count > 0)
+        {
+            overallAverageScore = (int)Math.Round(completedQuizzes.Average(q => q.Score));
+        }
+    }
+
+    private void ToggleQuizExpansion(int quizId)
+    {
+        if (expandedQuizId == quizId)
+            expandedQuizId = null;
+        else
+            expandedQuizId = quizId;
+    }
+
+    private string GetScoreClass(int score)
+    {
+        if (score >= 90) return "excellent";
+        if (score >= 75) return "good";
+        if (score >= 60) return "average";
+        return "poor";
+    }
+
+    private string GetAnswerClass(Answer answer, QuestionResultViewModel question)
+    {
+        bool isStudentAnswer = answer.AnswerId == question.StudentAnswerId;
+        bool isCorrectAnswer = answer.IsCorrect;
+
+        if (isCorrectAnswer)
+            return "correct";
+        if (isStudentAnswer && !isCorrectAnswer)
+            return "incorrect";
+        if (isStudentAnswer)
+            return "selected";
+
+        return "";
+    }
+
+    private string GetAnswerIcon(Answer answer, QuestionResultViewModel question)
+    {
+        bool isStudentAnswer = answer.AnswerId == question.StudentAnswerId;
+        bool isCorrectAnswer = answer.IsCorrect;
+
+        if (isCorrectAnswer)
+            return "✓";
+        if (isStudentAnswer && !isCorrectAnswer)
+            return "✗";
+
+        return "○";
+    }
+
+    // ViewModel Classes
+    private class QuizResultViewModel
+    {
+        public int QuizId { get; set; }
+        public string QuizName { get; set; }
+        public int Score { get; set; }
+        public int TotalQuestions { get; set; }
+        public int CorrectAnswers { get; set; }
+        public DateTime CompletedAt { get; set; }
+        public int TotalTimeSpent { get; set; }
+        public List<QuestionResultViewModel> Questions { get; set; }
+    }
+
+    private class QuestionResultViewModel
+    {
+        public int QuestionNumber { get; set; }
+        public string QuestionText { get; set; }
+        public bool IsCorrect { get; set; }
+        public bool UsedHint { get; set; }
+        public string HintText { get; set; }
+        public List<Answer> Answers { get; set; }
+        public Answer CorrectAnswer { get; set; }
+        public int StudentAnswerId { get; set; }
+    }
+}

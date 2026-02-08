@@ -82,20 +82,20 @@
         font-weight: 500;
     }
 
-    .sidebar-item:hover {
-        background: #f3f4f6;
-        color: #374151;
-    }
+        .sidebar-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
 
-    .sidebar-item.active {
-        background: #eef2ff;
-        color: #667eea;
-        font-weight: 600;
-    }
+        .sidebar-item.active {
+            background: #eef2ff;
+            color: #667eea;
+            font-weight: 600;
+        }
 
-    .sidebar-item span:first-child {
-        font-size: 20px;
-    }
+        .sidebar-item span:first-child {
+            font-size: 20px;
+        }
 
     .main-container {
         flex: 1;
@@ -202,9 +202,9 @@
         border-bottom: 1px solid #f3f4f6;
     }
 
-    .stat-item:last-child {
-        border-bottom: none;
-    }
+        .stat-item:last-child {
+            border-bottom: none;
+        }
 
     .stat-label {
         font-size: 14px;
@@ -291,12 +291,12 @@
         background: #f9fafb;
     }
 
-    .form-input:focus {
-        outline: none;
-        border-color: #667eea;
-        background: white;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
-    }
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+        }
 
     .form-actions {
         display: flex;
@@ -326,19 +326,19 @@
         box-shadow: 0 4px 14px rgba(102, 126, 234, 0.3);
     }
 
-    .btn-primary:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
 
     .btn-secondary {
         background: #f3f4f6;
         color: #6b7280;
     }
 
-    .btn-secondary:hover {
-        background: #e5e7eb;
-    }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
 
     .btn:disabled {
         opacity: 0.6;
@@ -359,6 +359,7 @@
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -432,11 +433,11 @@
         gap: 8px;
     }
 
-    .btn-danger:hover {
-        background: #b91c1c;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
-    }
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+        }
 
     @@media (max-width: 1024px) {
         .profile-grid {
@@ -580,7 +581,7 @@
                         <h2 class="danger-title">Delete Account</h2>
                     </div>
                     <p class="danger-description">
-                        Once you delete your account, there is no going back. This will permanently delete 
+                        Once you delete your account, there is no going back. This will permanently delete
                         all your quiz history, progress, and personal information.
                     </p>
                     <button class="btn-danger" @onclick="HandleDeleteAccount">
@@ -608,7 +609,7 @@
         if (result.Success && result.Value != null)
         {
             student = result.Value;
-            
+
             originalStudent.user_id = student.user_id;
             originalStudent.FullName = student.FullName;
             originalStudent.Email = student.Email;
@@ -663,9 +664,9 @@
                 message = "✅ Profile updated successfully!";
                 messageClass = "success-msg";
                 newPassword = string.Empty;
-                
+
                 await session.SetAsync("user", student);
-                
+
                 originalStudent.FullName = student.FullName;
                 originalStudent.Email = student.Email;
             }
@@ -696,7 +697,7 @@
 
     private async Task HandleDeleteAccount()
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
             "Are you absolutely sure you want to delete your account? This action cannot be undone and will permanently delete all your data.");
 
         if (confirmed)

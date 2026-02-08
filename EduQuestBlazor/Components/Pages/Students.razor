@@ -1,0 +1,1210 @@
+﻿@page "/students"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+@inject NavigationManager nav
+@using Models
+@using DBL
+
+<PageTitle>EduQuest | My Students</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .dashboard {
+        display: flex;
+        height: 100vh;
+        background: #f5f7fa;
+    }
+
+    .sidebar {
+        width: 240px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding: 0 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        text-align: left;
+        font-weight: 500;
+    }
+
+        .sidebar-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .sidebar-item span:first-child {
+            font-size: 20px;
+        }
+
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 32px;
+        max-width: 1600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 32px;
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 24px;
+    }
+
+    .header-content h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 8px 0;
+    }
+
+    .header-content p {
+        color: #6b7280;
+        font-size: 15px;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .export-btn {
+        padding: 12px 20px;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .export-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #f3f4f6;
+        transition: all 0.2s;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .stat-icon {
+        font-size: 24px;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        line-height: 1;
+    }
+
+    .toolbar {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #f3f4f6;
+    }
+
+    .toolbar-content {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .search-wrapper {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        color: #9ca3af;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 11px 16px 11px 44px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.2s;
+        background: #f9fafb;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+        }
+
+    .filter-pills {
+        display: flex;
+        gap: 8px;
+    }
+
+    .filter-pill {
+        padding: 10px 18px;
+        border: 2px solid #e5e7eb;
+        background: white;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #6b7280;
+    }
+
+        .filter-pill:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .filter-pill.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+    .students-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
+    }
+
+    .student-card {
+        background: white;
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 2px solid #f3f4f6;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .student-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+
+        .student-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #3b82f6;
+        }
+
+            .student-card:hover::before {
+                transform: scaleX(1);
+            }
+
+        .student-card.struggling {
+            border-color: #fecaca;
+            background: linear-gradient(to bottom, #fef2f2 0%, white 50%);
+        }
+
+            .student-card.struggling::before {
+                background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+            }
+
+    .card-top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .student-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        font-weight: 700;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+        .student-avatar.struggling {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+    .student-main-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .student-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .student-email {
+        font-size: 13px;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 12px;
+    }
+
+        .status-badge.excellent {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.good {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.struggling {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .mini-stat {
+        text-align: center;
+        padding: 10px;
+        background: #f9fafb;
+        border-radius: 10px;
+        border: 1px solid #f3f4f6;
+    }
+
+    .mini-stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #3b82f6;
+        margin-bottom: 4px;
+        line-height: 1;
+    }
+
+    .mini-stat-label {
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 10px 14px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+            .action-btn.primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            }
+
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+
+            .action-btn.secondary:hover {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        opacity: 0.4;
+    }
+
+    .empty-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 12px;
+    }
+
+    .empty-description {
+        font-size: 15px;
+        color: #9ca3af;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeIn 0.2s;
+        backdrop-filter: blur(4px);
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .modal-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+        .close-btn:hover {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        background: #f9fafb;
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 14px 24px;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #6b7280;
+        border: 1px solid #e5e7eb;
+    }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+    .success-message {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 14px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+        border: 1px solid #a7f3d0;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 60px;
+        color: #9ca3af;
+    }
+
+    @@media (max-width: 1200px) {
+        .students-container {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .stats-overview {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .toolbar-content {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-wrapper {
+            max-width: 100%;
+        }
+
+        .students-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            <div class="logo-text">EduQuest</div>
+        </div>
+        <div class="sidebar-menu">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/teacher-home"))">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/create-quiz"))">
+                <span>➕</span>
+                <span>Quick Create</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-quizzes"))">
+                <span>📚</span>
+                <span>My Quizzes</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/requests"))">
+                <span>📬</span>
+                <span>Requests</span>
+            </button>
+            <button class="sidebar-item active">
+                <span>👥</span>
+                <span>Students</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profile-teacher"))">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-container">
+        <div class="page-header">
+            <div class="header-top">
+                <div class="header-content">
+                    <h1>My Students</h1>
+                    <p>Track and support your students' learning journey</p>
+                </div>
+                <div class="header-actions">
+                    <button class="export-btn">
+                        <span>📊</span>
+                        <span>Export Data</span>
+                    </button>
+                </div>
+            </div>
+
+            @if (!isLoading && students.Count > 0)
+            {
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Total Students</span>
+                            <span class="stat-icon">👥</span>
+                        </div>
+                        <div class="stat-value">@students.Count</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Excellent (90%+)</span>
+                            <span class="stat-icon">⭐</span>
+                        </div>
+                        <div class="stat-value">@excellentStudentsCount</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Class Average</span>
+                            <span class="stat-icon">📈</span>
+                        </div>
+                        <div class="stat-value">@averageClassScore<span style="font-size: 18px; color: #6b7280;">%</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Need Help (&lt;60%)</span>
+                            <span class="stat-icon">⚠️</span>
+                        </div>
+                        <div class="stat-value">@strugglingStudentsCount</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-content">
+                <div class="search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text"
+                           class="search-input"
+                           placeholder="Search by name or email..."
+                           @bind="searchQuery"
+                           @bind:event="oninput"
+                           @onkeyup="FilterStudents" />
+                </div>
+                <div class="filter-pills">
+                    <button class="filter-pill @(currentFilter == "all" ? "active" : "")"
+                            @onclick='() => ChangeFilter("all")'>
+                        All
+                    </button>
+                    <button class="filter-pill @(currentFilter == "excellent" ? "active" : "")"
+                            @onclick='() => ChangeFilter("excellent")'>
+                        Excellent
+                    </button>
+                    <button class="filter-pill @(currentFilter == "struggling" ? "active" : "")"
+                            @onclick='() => ChangeFilter("struggling")'>
+                        Need Help
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="loading">
+                <div class="empty-icon">⏳</div>
+                <p>Loading students...</p>
+            </div>
+        }
+        else if (students == null || students.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3 class="empty-title">No Students Yet</h3>
+                <p class="empty-description">Students who complete your quizzes will appear here.</p>
+            </div>
+        }
+        else if (filteredStudents.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3 class="empty-title">No Results Found</h3>
+                <p class="empty-description">Try adjusting your search or filter criteria.</p>
+            </div>
+        }
+        else
+        {
+            <div class="students-container">
+                @foreach (var student in filteredStudents)
+                {
+                    <div class="student-card @(student.IsStruggling ? "struggling" : "")"
+                         @onclick="@(() => ViewStudentDetails(student))">
+                        <div class="card-top">
+                            <div class="student-avatar @(student.IsStruggling ? "struggling" : "")">
+                                @GetInitials(student.StudentName)
+                            </div>
+                            <div class="student-main-info">
+                                <div class="student-name">@student.StudentName</div>
+                                <div class="student-email">@student.StudentEmail</div>
+                            </div>
+                        </div>
+
+                        <span class="status-badge @GetStatusClass(student.AverageScore)">
+                            @GetStatusIcon(student.AverageScore) @GetStatusText(student.AverageScore)
+                        </span>
+
+                        <div class="stats-row">
+                            <div class="mini-stat">
+                                <div class="mini-stat-value">@student.QuizzesTaken</div>
+                                <div class="mini-stat-label">Quizzes</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-value">@student.AverageScore%</div>
+                                <div class="mini-stat-label">Avg Score</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-value">@student.LastActivity</div>
+                                <div class="mini-stat-label">Last Active</div>
+                            </div>
+                        </div>
+
+                        <div class="card-actions" @onclick:stopPropagation="true">
+                            <button class="action-btn primary"
+                                    @onclick="@(() => ScheduleTutoring(student))">
+                                <span>📅</span>
+                                <span>Schedule</span>
+                            </button>
+                            <button class="action-btn secondary"
+                                    @onclick="@(() => ViewStudentDetails(student))">
+                                <span>👁️</span>
+                                <span>Details</span>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </main>
+</div>
+
+@if (showScheduleModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2 class="modal-title">Schedule Tutoring Session</h2>
+                <button class="close-btn" @onclick="CloseModal">×</button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="success-message">
+                    <span>✓</span>
+                    <span>@successMessage</span>
+                </div>
+            }
+
+            <div class="form-group">
+                <label class="form-label">Student</label>
+                <input type="text" class="form-input" value="@selectedStudent?.StudentName" disabled />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Subject</label>
+                <input type="text"
+                       class="form-input"
+                       placeholder="e.g., Math - Algebra"
+                       @bind="tutoringSubject" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date & Time</label>
+                <input type="datetime-local"
+                       class="form-input"
+                       @bind="tutoringDateTime" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Duration</label>
+                <select class="form-select" @bind="tutoringDuration">
+                    <option value="30">30 minutes</option>
+                    <option value="45">45 minutes</option>
+                    <option value="60">60 minutes</option>
+                    <option value="90">90 minutes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes (optional)</label>
+                <textarea class="form-textarea"
+                          placeholder="Topics to focus on, student's specific challenges, etc."
+                          @bind="tutoringNotes"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                <button class="btn btn-primary" @onclick="ConfirmScheduling">
+                    <span>📅</span>
+                    <span>Send Request</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private int teacherId = 0;
+    private bool isLoading = true;
+    private List<StudentViewModel> students = new();
+    private List<StudentViewModel> filteredStudents = new();
+    private string searchQuery = "";
+    private string currentFilter = "all";
+
+    // Statistics
+    private int excellentStudentsCount = 0;
+    private int strugglingStudentsCount = 0;
+    private int averageClassScore = 0;
+
+    // Modals
+    private bool showScheduleModal = false;
+    private StudentViewModel selectedStudent;
+    private string successMessage = "";
+
+    // Tutoring form
+    private string tutoringSubject = "";
+    private DateTime tutoringDateTime = DateTime.Now.AddDays(1);
+    private int tutoringDuration = 60;
+    private string tutoringNotes = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                teacherId = result.Value.user_id;
+                await LoadStudents();
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+            nav.NavigateTo("/login");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadStudents()
+    {
+        try
+        {
+            var quizDb = new QuizDB();
+            var resultDb = new ResultDB();
+            var customerDb = new CustomerDB();
+
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
+            var studentData = new Dictionary<int, StudentViewModel>();
+
+            foreach (var quiz in teacherQuizzes)
+            {
+                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+                var studentGroups = results.GroupBy(r => r.student_id);
+
+                foreach (var group in studentGroups)
+                {
+                    int studentId = group.Key;
+
+                    if (!studentData.ContainsKey(studentId))
+                    {
+                        var student = await customerDb.SelectByPkAsync(studentId);
+                        if (student != null)
+                        {
+                            studentData[studentId] = new StudentViewModel
+                                {
+                                    StudentId = studentId,
+                                    StudentName = student.FullName,
+                                    StudentEmail = student.Email,
+                                    QuizzesTaken = 0,
+                                    TotalScore = 0,
+                                    LastActivityDate = DateTime.MinValue
+                                };
+                        }
+                    }
+
+                    if (studentData.ContainsKey(studentId))
+                    {
+                        var studentVM = studentData[studentId];
+                        var studentResults = group.ToList();
+
+                        if (studentResults.Any(r => r.score > 0))
+                        {
+                            studentVM.QuizzesTaken++;
+                            int quizScore = studentResults.First(r => r.score > 0).score;
+                            studentVM.TotalScore += quizScore;
+                        }
+
+                        var lastDate = studentResults.Max(r => r.answered_at);
+                        if (lastDate > studentVM.LastActivityDate)
+                            studentVM.LastActivityDate = lastDate;
+                    }
+                }
+            }
+
+            foreach (var student in studentData.Values)
+            {
+                if (student.QuizzesTaken > 0)
+                {
+                    student.AverageScore = student.TotalScore / student.QuizzesTaken;
+                    student.IsStruggling = student.AverageScore < 60;
+                }
+
+                var timeAgo = DateTime.Now - student.LastActivityDate;
+                if (timeAgo.TotalDays < 1)
+                    student.LastActivity = "Today";
+                else if (timeAgo.TotalDays < 7)
+                    student.LastActivity = $"{(int)timeAgo.TotalDays}d";
+                else
+                    student.LastActivity = student.LastActivityDate.ToString("MMM dd");
+            }
+
+            students = studentData.Values.OrderByDescending(s => s.AverageScore).ToList();
+            filteredStudents = students;
+
+            excellentStudentsCount = students.Count(s => s.AverageScore >= 90);
+            strugglingStudentsCount = students.Count(s => s.AverageScore < 60);
+            averageClassScore = students.Count > 0 ? (int)students.Average(s => s.AverageScore) : 0;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading students: {ex.Message}");
+        }
+    }
+
+    private void FilterStudents()
+    {
+        var query = searchQuery.ToLower();
+        var filtered = students.Where(s =>
+            s.StudentName.ToLower().Contains(query) ||
+            s.StudentEmail.ToLower().Contains(query)
+        );
+
+        if (currentFilter == "excellent")
+            filtered = filtered.Where(s => s.AverageScore >= 90);
+        else if (currentFilter == "struggling")
+            filtered = filtered.Where(s => s.AverageScore < 60);
+
+        filteredStudents = filtered.ToList();
+    }
+
+    private void ChangeFilter(string filter)
+    {
+        currentFilter = filter;
+        FilterStudents();
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name[0].ToString().ToUpper();
+    }
+
+    private string GetStatusClass(int score)
+    {
+        if (score >= 90) return "excellent";
+        if (score >= 60) return "good";
+        return "struggling";
+    }
+
+    private string GetStatusIcon(int score)
+    {
+        if (score >= 90) return "⭐";
+        if (score >= 60) return "✓";
+        return "⚠️";
+    }
+
+    private string GetStatusText(int score)
+    {
+        if (score >= 90) return "Excellent";
+        if (score >= 60) return "Good";
+        return "Needs Help";
+    }
+
+    private void ViewStudentDetails(StudentViewModel student)
+    {
+        // Placeholder for future implementation
+        System.Diagnostics.Debug.WriteLine($"Viewing details for {student.StudentName}");
+    }
+
+    private void ScheduleTutoring(StudentViewModel student)
+    {
+        selectedStudent = student;
+        tutoringSubject = "";
+        tutoringNotes = "";
+        tutoringDateTime = DateTime.Now.AddDays(1);
+        successMessage = "";
+        showScheduleModal = true;
+    }
+
+    private async Task ConfirmScheduling()
+    {
+        try
+        {
+            var requestDb = new RequestDB();
+            var request = new Request
+                {
+                    TeacherId = teacherId,
+                    StudentId = selectedStudent.StudentId,
+                    Subject = tutoringSubject,
+                    RequestedDateTime = tutoringDateTime,
+                    DurationMinutes = tutoringDuration,
+                    Notes = tutoringNotes
+                };
+
+            await requestDb.CreateRequestAsync(request);
+            successMessage = "Tutoring session request sent successfully!";
+            await Task.Delay(2000);
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private void CloseModal()
+    {
+        showScheduleModal = false;
+        selectedStudent = null;
+        successMessage = "";
+    }
+
+    private class StudentViewModel
+    {
+        public int StudentId { get; set; }
+        public string StudentName { get; set; }
+        public string StudentEmail { get; set; }
+        public int QuizzesTaken { get; set; }
+        public int AverageScore { get; set; }
+        public int TotalScore { get; set; }
+        public bool IsStruggling { get; set; }
+        public string LastActivity { get; set; }
+        public DateTime LastActivityDate { get; set; }
+    }
+}

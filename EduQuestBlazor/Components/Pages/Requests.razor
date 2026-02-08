@@ -1,0 +1,727 @@
+﻿@page "/requests"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+@inject NavigationManager nav
+@using Models
+@using DBL
+
+<PageTitle>EduQuest | Tutoring Requests</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .dashboard {
+        display: flex;
+        height: 100vh;
+        background: #f5f7fa;
+    }
+
+    .sidebar {
+        width: 240px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 20px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding: 0 8px;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .logo-text {
+        font-size: 20px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        text-align: left;
+        font-weight: 500;
+        position: relative;
+    }
+
+        .sidebar-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .sidebar-item.active {
+            background: #eff6ff;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .sidebar-item span:first-child {
+            font-size: 20px;
+        }
+
+    .badge {
+        position: absolute;
+        right: 12px;
+        background: #ef4444;
+        color: white;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 32px;
+    }
+
+    .header {
+        margin-bottom: 32px;
+    }
+
+    .greeting {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .greeting-sub {
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .tab {
+        padding: 12px 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        color: #6b7280;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+        .tab:hover {
+            color: #3b82f6;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab .count {
+            margin-left: 8px;
+            background: #e5e7eb;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tab.active .count {
+            background: #3b82f6;
+            color: white;
+        }
+
+    .requests-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .request-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 2px solid transparent;
+        transition: all 0.3s;
+    }
+
+        .request-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .request-card.pending {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .request-card.accepted {
+            border-left: 4px solid #10b981;
+        }
+
+        .request-card.declined {
+            border-left: 4px solid #ef4444;
+        }
+
+        .request-card.completed {
+            border-left: 4px solid #6b7280;
+            opacity: 0.8;
+        }
+
+    .request-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 16px;
+    }
+
+    .request-info {
+        flex: 1;
+    }
+
+    .request-student {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .student-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .student-details h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 4px 0;
+    }
+
+    .student-details p {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .request-status {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-accepted {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-declined {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-completed {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .request-subject {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .request-details {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .detail-icon {
+        font-size: 18px;
+    }
+
+    .request-notes {
+        background: #f9fafb;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+    }
+
+    .notes-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .notes-text {
+        font-size: 14px;
+        color: #374151;
+        line-height: 1.6;
+    }
+
+    .request-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-accept {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+        .btn-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+    .btn-decline {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+        .btn-decline:hover {
+            background: #fecaca;
+        }
+
+    .btn-complete {
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-complete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+    .btn-disabled {
+        background: #f3f4f6;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+    }
+</style>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">Q</div>
+            <div class="logo-text">EduQuest</div>
+        </div>
+        <div class="sidebar-menu">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/teacher-home"))">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/create-quiz"))">
+                <span>➕</span>
+                <span>Quick Create</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-quizzes"))">
+                <span>📚</span>
+                <span>My Quizzes</span>
+            </button>
+            <button class="sidebar-item active">
+                <span>📬</span>
+                <span>Requests</span>
+                @if (pendingCount > 0)
+                {
+                    <span class="badge">@pendingCount</span>
+                }
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/students"))">
+                <span>👥</span>
+                <span>Students</span>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profile-teacher"))">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-container">
+        <div class="header">
+            <h1 class="greeting">Tutoring Requests</h1>
+            <p class="greeting-sub">Manage student tutoring session requests</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab @(currentTab == "pending" ? "active" : "")"
+                    @onclick='() => currentTab = "pending"'>
+                Pending
+                <span class="count">@pendingRequests.Count</span>
+            </button>
+            <button class="tab @(currentTab == "accepted" ? "active" : "")"
+                    @onclick='() => currentTab = "accepted"'>
+                Accepted
+                <span class="count">@acceptedRequests.Count</span>
+            </button>
+            <button class="tab @(currentTab == "completed" ? "active" : "")"
+                    @onclick='() => currentTab = "completed"'>
+                Completed
+                <span class="count">@completedRequests.Count</span>
+            </button>
+            <button class="tab @(currentTab == "declined" ? "active" : "")"
+                    @onclick='() => currentTab = "declined"'>
+                Declined
+                <span class="count">@declinedRequests.Count</span>
+            </button>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="loading">
+                <div class="empty-icon">⏳</div>
+                <p>Loading requests...</p>
+            </div>
+        }
+        else
+        {
+            <div class="requests-list">
+                @foreach (var req in GetCurrentTabRequests())
+                {
+                    <div class="request-card @req.Request.Status.ToLower()">
+                        <div class="request-header">
+                            <div class="request-info">
+                                <div class="request-student">
+                                    <div class="student-avatar">
+                                        @GetInitials(req.StudentName)
+                                    </div>
+                                    <div class="student-details">
+                                        <h3>@req.StudentName</h3>
+                                        <p>@req.StudentEmail</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="request-status status-@req.Request.Status.ToLower()">
+                                @req.Request.Status
+                            </span>
+                        </div>
+
+                        <div class="request-subject">@req.Request.Subject</div>
+
+                        <div class="request-details">
+                            <div class="detail-item">
+                                <span class="detail-icon">📅</span>
+                                <span>@req.Request.RequestedDateTime.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">⏰</span>
+                                <span>@req.Request.RequestedDateTime.ToString("h:mm tt")</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">⏱️</span>
+                                <span>@req.Request.DurationMinutes minutes</span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(req.Request.Notes))
+                        {
+                            <div class="request-notes">
+                                <div class="notes-label">Student Notes</div>
+                                <div class="notes-text">@req.Request.Notes</div>
+                            </div>
+                        }
+
+                        <div class="request-actions">
+                            @if (req.Request.Status == "Pending")
+                            {
+                                <button class="action-btn btn-accept"
+                                        @onclick="@(() => AcceptRequest(req.Request.RequestId))">
+                                    <span>✓</span>
+                                    <span>Accept</span>
+                                </button>
+                                <button class="action-btn btn-decline"
+                                        @onclick="@(() => DeclineRequest(req.Request.RequestId))">
+                                    <span>✗</span>
+                                    <span>Decline</span>
+                                </button>
+                            }
+                            else if (req.Request.Status == "Accepted")
+                            {
+                                <button class="action-btn btn-complete"
+                                        @onclick="@(() => CompleteRequest(req.Request.RequestId))">
+                                    <span>✓</span>
+                                    <span>Mark as Completed</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="action-btn btn-disabled" disabled>
+                                    <span>Session @req.Request.Status</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (GetCurrentTabRequests().Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">📬</div>
+                        <h3 class="empty-title">No @currentTab requests</h3>
+                        <p>You don't have any @currentTab tutoring requests at the moment.</p>
+                    </div>
+                }
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    private int teacherId = 0;
+    private bool isLoading = true;
+    private string currentTab = "pending";
+    private int pendingCount = 0;
+
+    private List<RequestWithStudent> allRequests = new();
+    private List<RequestWithStudent> pendingRequests = new();
+    private List<RequestWithStudent> acceptedRequests = new();
+    private List<RequestWithStudent> completedRequests = new();
+    private List<RequestWithStudent> declinedRequests = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                teacherId = result.Value.user_id;
+                await LoadRequests();
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+            nav.NavigateTo("/login");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadRequests()
+    {
+        try
+        {
+            var requestDb = new RequestDB();
+            var customerDb = new CustomerDB();
+
+            var requests = await requestDb.GetTeacherRequestsAsync(teacherId);
+            allRequests = new List<RequestWithStudent>();
+
+            foreach (var req in requests)
+            {
+                var student = await customerDb.SelectByPkAsync(req.StudentId);
+                allRequests.Add(new RequestWithStudent
+                    {
+                        Request = req,
+                        StudentName = student?.FullName ?? "Unknown",
+                        StudentEmail = student?.Email ?? ""
+                    });
+            }
+
+            // Filter by status
+            pendingRequests = allRequests.Where(r => r.Request.Status == "Pending").ToList();
+            acceptedRequests = allRequests.Where(r => r.Request.Status == "Accepted").ToList();
+            completedRequests = allRequests.Where(r => r.Request.Status == "Completed").ToList();
+            declinedRequests = allRequests.Where(r => r.Request.Status == "Declined").ToList();
+
+            pendingCount = pendingRequests.Count;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading requests: {ex.Message}");
+        }
+    }
+
+    private List<RequestWithStudent> GetCurrentTabRequests()
+    {
+        return currentTab switch
+        {
+            "pending" => pendingRequests,
+            "accepted" => acceptedRequests,
+            "completed" => completedRequests,
+            "declined" => declinedRequests,
+            _ => pendingRequests
+        };
+    }
+
+    private async Task AcceptRequest(int requestId)
+    {
+        try
+        {
+            var requestDb = new RequestDB();
+            await requestDb.UpdateRequestStatusAsync(requestId, "Accepted");
+            await LoadRequests();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error accepting request: {ex.Message}");
+        }
+    }
+
+    private async Task DeclineRequest(int requestId)
+    {
+        try
+        {
+            var requestDb = new RequestDB();
+            await requestDb.UpdateRequestStatusAsync(requestId, "Declined");
+            await LoadRequests();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error declining request: {ex.Message}");
+        }
+    }
+
+    private async Task CompleteRequest(int requestId)
+    {
+        try
+        {
+            var requestDb = new RequestDB();
+            await requestDb.UpdateRequestStatusAsync(requestId, "Completed");
+            await LoadRequests();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error completing request: {ex.Message}");
+        }
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "?";
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name[0].ToString().ToUpper();
+    }
+
+    private class RequestWithStudent
+    {
+        public Request Request { get; set; }
+        public string StudentName { get; set; }
+        public string StudentEmail { get; set; }
+    }
+}

@@ -511,12 +511,16 @@
                 <span>📚</span>
                 <span>Your Library</span>
             </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-results"))">
+                <span>📊</span>
+                <span>My Results</span>
+            </button>
             <button class="sidebar-item alert-badge" @onclick="@(()=>nav.NavigateTo("/notifications"))">
                 <span>🔔</span>
                 <span>Notifications</span>
             </button>
             <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/progress"))">
-                <span>📊</span>
+                <span>📈</span>
                 <span>Progress</span>
             </button>
             <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/profile-student"))">
@@ -546,17 +550,17 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon purple">📝</div>
-                    <div class="stat-value">@(quizzes?.Count ?? 0)</div>
+                    <div class="stat-value">@totalAvailableQuizzes</div>
                     <div class="stat-label">Available Quizzes</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon green">✓</div>
-                    <div class="stat-value">24</div>
+                    <div class="stat-value">@completedQuizzes</div>
                     <div class="stat-label">Completed</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon orange">🔥</div>
-                    <div class="stat-value">7</div>
+                    <div class="stat-value">@dayStreak</div>
                     <div class="stat-label">Day Streak</div>
                 </div>
             </div>
@@ -567,14 +571,14 @@
                     <span class="view-all" @onclick="@(()=>nav.NavigateTo("/student-quizzes"))">View all →</span>
                 </div>
 
-                @if (quizzes == null)
+                @if (allQuizzes == null)
                 {
                     <div class="empty-state">
                         <div class="empty-icon">⏳</div>
                         <p>Loading quizzes...</p>
                     </div>
                 }
-                else if (quizzes.Count == 0)
+                else if (allQuizzes.Count == 0)
                 {
                     <div class="empty-state">
                         <div class="empty-icon">📚</div>
@@ -584,13 +588,13 @@
                 else
                 {
                     <div class="quiz-grid">
-                        @foreach (var q in quizzes.Take(4))
+                        @foreach (var quiz in allQuizzes.Take(4))
                         {
-                            <div class="quiz-card" @onclick="@(()=>nav.NavigateTo($"/quiz/{q.QuestionID}"))">
-                                <div class="quiz-topic">@q.TopicName</div>
+                            <div class="quiz-card" @onclick="@(()=>nav.NavigateTo($"/take-quiz/{quiz.QuizId}"))">
+                                <div class="quiz-topic">@quiz.QuizName</div>
                                 <div class="quiz-meta">
-                                    <span>📝 @GetRandomQuestionCount() questions</span>
-                                    <span>⏱️ @GetRandomDuration() min</span>
+                                    <span>📝 @quiz.Questions.Count questions</span>
+                                    <span>⏱️ @(quiz.Questions.Count * 2) min</span>
                                 </div>
                             </div>
                         }
@@ -602,102 +606,98 @@
                 <div class="section-header">
                     <h2 class="section-title">Recent Activity</h2>
                 </div>
-                <div class="quiz-grid">
-                    <div class="quiz-card">
-                        <div class="quiz-topic">Biology Quiz</div>
-                        <div class="quiz-meta">
-                            <span>⭐ 85%</span>
-                            <span>📅 2 days ago</span>
-                        </div>
+                @if (recentActivity == null || recentActivity.Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>No recent activity. Start taking quizzes!</p>
                     </div>
-                    <div class="quiz-card">
-                        <div class="quiz-topic">Math Practice</div>
-                        <div class="quiz-meta">
-                            <span>⭐ 92%</span>
-                            <span>📅 3 days ago</span>
-                        </div>
+                }
+                else
+                {
+                    <div class="quiz-grid">
+                        @foreach (var activity in recentActivity.Take(4))
+                        {
+                            <div class="quiz-card">
+                                <div class="quiz-topic">@activity.QuizName</div>
+                                <div class="quiz-meta">
+                                    <span>⭐ @activity.Score%</span>
+                                    <span>📅 @GetRelativeTime(activity.CompletedAt)</span>
+                                </div>
+                            </div>
+                        }
                     </div>
-                </div>
+                }
             </div>
         </main>
 
         <aside class="sidebar-right">
             <div class="widget">
                 <h3 class="widget-title">Your Progress</h3>
-                <div class="progress-item">
-                    <div class="progress-header">
-                        <span class="progress-subject">Mathematics</span>
-                        <span class="progress-percentage">78%</span>
+                @if (subjectProgress == null || subjectProgress.Count == 0)
+                {
+                    <div class="empty-state">
+                        <p style="font-size: 14px;">Start taking quizzes to see your progress!</p>
                     </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: 78%"></div>
-                    </div>
-                </div>
-                <div class="progress-item">
-                    <div class="progress-header">
-                        <span class="progress-subject">Biology</span>
-                        <span class="progress-percentage">92%</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: 92%"></div>
-                    </div>
-                </div>
-                <div class="progress-item">
-                    <div class="progress-header">
-                        <span class="progress-subject">Physics</span>
-                        <span class="progress-percentage">65%</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: 65%"></div>
-                    </div>
-                </div>
+                }
+                else
+                {
+                    @foreach (var progress in subjectProgress.Take(5))
+                    {
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span class="progress-subject">@progress.SubjectName</span>
+                                <span class="progress-percentage">@progress.AverageScore%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: @(progress.AverageScore)%"></div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
 
             <div class="widget">
                 <h3 class="widget-title">Achievements</h3>
-                <div class="achievement-item">
-                    <div class="achievement-icon gold">🏆</div>
-                    <div class="achievement-content">
-                        <div class="achievement-name">Perfect Score</div>
-                        <div class="achievement-desc">100% on Biology quiz</div>
+                @if (achievements == null || achievements.Count == 0)
+                {
+                    <div class="empty-state">
+                        <p style="font-size: 14px;">Complete quizzes to earn achievements!</p>
                     </div>
-                </div>
-                <div class="achievement-item">
-                    <div class="achievement-icon silver">⚡</div>
-                    <div class="achievement-content">
-                        <div class="achievement-name">Speed Master</div>
-                        <div class="achievement-desc">Completed in 5 minutes</div>
-                    </div>
-                </div>
-                <div class="achievement-item">
-                    <div class="achievement-icon bronze">🎯</div>
-                    <div class="achievement-content">
-                        <div class="achievement-name">Consistent Learner</div>
-                        <div class="achievement-desc">7 day study streak</div>
-                    </div>
-                </div>
+                }
+                else
+                {
+                    @foreach (var achievement in achievements.Take(3))
+                    {
+                        <div class="achievement-item">
+                            <div class="achievement-icon @achievement.Type">@achievement.Icon</div>
+                            <div class="achievement-content">
+                                <div class="achievement-name">@achievement.Name</div>
+                                <div class="achievement-desc">@achievement.Description</div>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
 
             <div class="widget">
-                <h3 class="widget-title">Upcoming Sessions</h3>
-                <div class="upcoming-item">
-                    <div class="upcoming-date">
-                        <div class="date-day">12</div>
-                        <div class="date-month">NOV</div>
-                    </div>
-                    <div class="upcoming-content">
-                        <div class="upcoming-title">Math Tutoring</div>
-                        <div class="upcoming-time">4:00 PM - 5:00 PM</div>
+                <h3 class="widget-title">Quick Stats</h3>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-subject">Total Questions Answered</span>
+                        <span class="progress-percentage">@totalQuestionsAnswered</span>
                     </div>
                 </div>
-                <div class="upcoming-item">
-                    <div class="upcoming-date">
-                        <div class="date-day">14</div>
-                        <div class="date-month">NOV</div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-subject">Overall Accuracy</span>
+                        <span class="progress-percentage">@overallAccuracy%</span>
                     </div>
-                    <div class="upcoming-content">
-                        <div class="upcoming-title">Physics Review</div>
-                        <div class="upcoming-time">3:00 PM - 4:00 PM</div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-subject">Study Time (hours)</span>
+                        <span class="progress-percentage">@totalStudyHours</span>
                     </div>
                 </div>
             </div>
@@ -707,21 +707,316 @@
 
 @code {
     private string studentName = "";
-    private List<Question> quizzes;
+    private int studentId = 0;
+    private List<Quiz> allQuizzes;
+
+    // ✅ נתונים דינמיים
+    private int totalAvailableQuizzes = 0;
+    private int completedQuizzes = 0;
+    private int dayStreak = 0;
+    private int totalQuestionsAnswered = 0;
+    private int overallAccuracy = 0;
+    private int totalStudyHours = 0;
+
+    // ✅ רשימות דינמיות
+    private List<RecentActivityItem> recentActivity;
+    private List<SubjectProgress> subjectProgress;
+    private List<Achievement> achievements;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await session.GetAsync<Customers>("user");
-        if (result.Success && result.Value != null)
+        try
         {
-            studentName = result.Value.FullName;
-            var db = new QuestionDB();
-            quizzes = await db.GetRecentByTeacherAsync(1);
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                studentName = result.Value.FullName;
+                studentId = result.Value.user_id;
+
+                // טעינת כל הנתונים
+                await LoadAllData();
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+            }
         }
-        else
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
             nav.NavigateTo("/login");
         }
+    }
+
+    private async Task LoadAllData()
+    {
+        try
+        {
+            var quizDb = new QuizDB();
+            var resultDb = new ResultDB();
+
+            // 1. טעינת כל החידונים הזמינים
+            allQuizzes = await quizDb.GetAllQuizzesAsync();
+            totalAvailableQuizzes = allQuizzes.Count;
+
+            // 2. טעינת כל התוצאות של התלמיד
+            var allResults = await resultDb.GetAllStudentResultsAsync(studentId);
+
+            // 3. חישוב חידונים שהושלמו (ייחודיים)
+            completedQuizzes = allResults
+                .Select(r => r.quiz_id)
+                .Distinct()
+                .Count();
+
+            // 4. חישוב Day Streak (ימים רצופים של פעילות)
+            dayStreak = CalculateDayStreak(allResults);
+
+            // 5. חישוב סך שאלות שנענו
+            totalQuestionsAnswered = allResults.Count;
+
+            // 6. חישוב דיוק כללי
+            if (totalQuestionsAnswered > 0)
+            {
+                int correctAnswers = allResults.Count(r => r.is_correct == 1);
+                overallAccuracy = (int)Math.Round((double)correctAnswers / totalQuestionsAnswered * 100);
+            }
+
+            // 7. חישוב זמן לימוד (בשעות) - מסך הזמן שלקח לענות על שאלות
+            totalStudyHours = (int)Math.Round(allResults.Sum(r => r.time_taken) / 3600.0);
+
+            // 8. טעינת פעילות אחרונה
+            await LoadRecentActivity(allResults);
+
+            // 9. טעינת התקדמות לפי נושאים
+            await LoadSubjectProgress(allResults);
+
+            // 10. טעינת הישגים
+            LoadAchievements(allResults);
+
+            System.Diagnostics.Debug.WriteLine($"Data loaded successfully for student {studentId}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+        }
+    }
+
+    private int CalculateDayStreak(List<Result> results)
+    {
+        if (results.Count == 0) return 0;
+
+        var sortedDates = results
+            .Select(r => r.answered_at.Date)
+            .Distinct()
+            .OrderByDescending(d => d)
+            .ToList();
+
+        if (sortedDates.Count == 0) return 0;
+
+        // בדיקה אם יש פעילות היום או אתמול
+        var today = DateTime.Now.Date;
+        if (sortedDates[0] != today && sortedDates[0] != today.AddDays(-1))
+            return 0;
+
+        int streak = 1;
+        for (int i = 1; i < sortedDates.Count; i++)
+        {
+            if (sortedDates[i - 1].AddDays(-1) == sortedDates[i])
+                streak++;
+            else
+                break;
+        }
+
+        return streak;
+    }
+
+    private async Task LoadRecentActivity(List<Result> allResults)
+    {
+        try
+        {
+            recentActivity = new List<RecentActivityItem>();
+
+            // קבלת חידונים שהושלמו עם התאריכים
+            var completedQuizzes = allResults
+                .GroupBy(r => r.quiz_id)
+                .Select(g => new
+                {
+                    QuizId = g.Key,
+                    CompletedAt = g.Max(r => r.answered_at),
+                    Results = g.ToList()
+                })
+                .OrderByDescending(x => x.CompletedAt)
+                .Take(4)
+                .ToList();
+
+            var quizDb = new QuizDB();
+
+            foreach (var cq in completedQuizzes)
+            {
+                var quiz = await quizDb.GetQuizWithQuestionsAsync(cq.QuizId);
+                if (quiz != null)
+                {
+                    int correct = cq.Results.Count(r => r.is_correct == 1);
+                    int score = (int)Math.Round((double)correct / cq.Results.Count * 100);
+
+                    recentActivity.Add(new RecentActivityItem
+                        {
+                            QuizName = quiz.QuizName,
+                            Score = score,
+                            CompletedAt = cq.CompletedAt
+                        });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading recent activity: {ex.Message}");
+            recentActivity = new List<RecentActivityItem>();
+        }
+    }
+
+    private async Task LoadSubjectProgress(List<Result> allResults)
+    {
+        try
+        {
+            subjectProgress = new List<SubjectProgress>();
+            var quizDb = new QuizDB();
+            var subjectDb = new SubjectDB();
+
+            // קבלת כל ה-Subjects
+            var allSubjects = await subjectDb.GetAllSubjectsAsync();
+
+            foreach (var subject in allSubjects)
+            {
+                // קבלת כל החידונים של ה-Subject הזה
+                var subjectQuizzes = allQuizzes.Where(q => q.SubjectId == subject.subject_id).ToList();
+
+                if (subjectQuizzes.Count == 0) continue;
+
+                // קבלת התוצאות של התלמיד בחידונים אלו
+                var subjectResults = allResults
+                    .Where(r => subjectQuizzes.Any(sq => sq.QuizId == r.quiz_id))
+                    .ToList();
+
+                if (subjectResults.Count > 0)
+                {
+                    int correct = subjectResults.Count(r => r.is_correct == 1);
+                    int avgScore = (int)Math.Round((double)correct / subjectResults.Count * 100);
+
+                    subjectProgress.Add(new SubjectProgress
+                        {
+                            SubjectName = subject.subject_name,
+                            AverageScore = avgScore
+                        });
+                }
+            }
+
+            // מיון לפי ציון
+            subjectProgress = subjectProgress.OrderByDescending(sp => sp.AverageScore).ToList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading subject progress: {ex.Message}");
+            subjectProgress = new List<SubjectProgress>();
+        }
+    }
+
+    private void LoadAchievements(List<Result> allResults)
+    {
+        try
+        {
+            achievements = new List<Achievement>();
+
+            // הישג 1: Perfect Score (100% בחידון)
+            var perfectQuizzes = allResults
+                .GroupBy(r => r.quiz_id)
+                .Where(g => g.All(r => r.is_correct == 1))
+                .ToList();
+
+            if (perfectQuizzes.Count > 0)
+            {
+                achievements.Add(new Achievement
+                    {
+                        Name = "Perfect Score",
+                        Description = $"100% on {perfectQuizzes.Count} quiz(es)",
+                        Icon = "🏆",
+                        Type = "gold"
+                    });
+            }
+
+            // הישג 2: Speed Master (זמן ממוצע מהיר)
+            var avgTimePerQuestion = allResults.Count > 0
+                ? allResults.Average(r => r.time_taken)
+                : 0;
+
+            if (avgTimePerQuestion > 0 && avgTimePerQuestion < 30) // פחות מ-30 שניות לשאלה
+            {
+                achievements.Add(new Achievement
+                    {
+                        Name = "Speed Master",
+                        Description = $"Avg {(int)avgTimePerQuestion}s per question",
+                        Icon = "⚡",
+                        Type = "silver"
+                    });
+            }
+
+            // הישג 3: Consistent Learner (Streak)
+            if (dayStreak >= 3)
+            {
+                achievements.Add(new Achievement
+                    {
+                        Name = "Consistent Learner",
+                        Description = $"{dayStreak} day study streak",
+                        Icon = "🎯",
+                        Type = "bronze"
+                    });
+            }
+
+            // הישג 4: Quiz Master (השלמת הרבה חידונים)
+            if (completedQuizzes >= 10)
+            {
+                achievements.Add(new Achievement
+                    {
+                        Name = "Quiz Master",
+                        Description = $"Completed {completedQuizzes} quizzes",
+                        Icon = "📚",
+                        Type = "gold"
+                    });
+            }
+
+            // הישג 5: High Scorer (ציון ממוצע גבוה)
+            if (overallAccuracy >= 90)
+            {
+                achievements.Add(new Achievement
+                    {
+                        Name = "High Scorer",
+                        Description = $"{overallAccuracy}% overall accuracy",
+                        Icon = "⭐",
+                        Type = "gold"
+                    });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading achievements: {ex.Message}");
+            achievements = new List<Achievement>();
+        }
+    }
+
+    private string GetRelativeTime(DateTime date)
+    {
+        var timeSpan = DateTime.Now - date;
+
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} min ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)(timeSpan.TotalDays / 7)} weeks ago";
+
+        return date.ToString("MMM dd, yyyy");
     }
 
     private async Task Logout()
@@ -739,15 +1034,25 @@
         return name[0].ToString().ToUpper();
     }
 
-    private int GetRandomQuestionCount()
+    // ✅ מחלקות עזר
+    private class RecentActivityItem
     {
-        var random = new Random();
-        return random.Next(10, 31);
+        public string QuizName { get; set; }
+        public int Score { get; set; }
+        public DateTime CompletedAt { get; set; }
     }
 
-    private int GetRandomDuration()
+    private class SubjectProgress
     {
-        var random = new Random();
-        return random.Next(10, 31);
+        public string SubjectName { get; set; }
+        public int AverageScore { get; set; }
+    }
+
+    private class Achievement
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Icon { get; set; }
+        public string Type { get; set; }
     }
 }
