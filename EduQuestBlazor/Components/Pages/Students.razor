@@ -4,6 +4,7 @@
 @inject NavigationManager nav
 @using Models
 @using DBL
+@inject IJSRuntime JSRuntime
 
 <PageTitle>EduQuest | My Students</PageTitle>
 
@@ -745,7 +746,7 @@
                     <p>Track and support your students' learning journey</p>
                 </div>
                 <div class="header-actions">
-                    <button class="export-btn">
+                    <button class="export-btn" @onclick="ExportData">
                         <span>📊</span>
                         <span>Export Data</span>
                     </button>
@@ -957,7 +958,110 @@
         </div>
     </div>
 }
+@if (showDetailsModal)
+{
+    <div class="modal-overlay" @onclick="CloseDetailsModal">
+        <div class="modal" @onclick:stopPropagation="true" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Student Performance Details</h2>
+                <button class="close-btn" @onclick="CloseDetailsModal">×</button>
+            </div>
 
+            @if (detailedStudent != null)
+            {
+                <div style="margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 16px; padding: 20px; background: #f9fafb; border-radius: 12px;">
+                        <div class="student-avatar" style="width: 64px; height: 64px; font-size: 24px;">
+                            @GetInitials(detailedStudent.StudentName)
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 6px 0;">
+                                @detailedStudent.StudentName
+                            </h3>
+                            <p style="font-size: 14px; color: #6b7280; margin: 0;">@detailedStudent.StudentEmail</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: #3b82f6;">
+                                @detailedStudent.AverageScore<span style="font-size: 18px;">%</span>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; font-weight: 600;">AVERAGE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">
+                        Quiz Performance (@studentQuizzes.Count Quizzes)
+                    </h4>
+
+                    @if (studentQuizzes.Count == 0)
+                    {
+                        <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                            <p>No quiz data available</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            @foreach (var quiz in studentQuizzes)
+                            {
+                                <div style="padding: 16px; background: white; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 12px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">
+                                                @quiz.QuizName
+                                            </div>
+                                            <div style="font-size: 13px; color: #6b7280;">
+                                                @quiz.CompletedAt.ToString("MMM dd, yyyy h:mm tt")
+                                            </div>
+                                        </div>
+                                        <div style="text-align: center; padding: 12px 20px; background: @GetScoreBackground(quiz.Score); border-radius: 10px;">
+                                            <div style="font-size: 24px; font-weight: 700; color: @GetScoreColor(quiz.Score);">
+                                                @quiz.Score%
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">QUESTIONS</div>
+                                            <div style="font-size: 16px; font-weight: 700; color: #374151;">@quiz.QuestionsTotal</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">CORRECT</div>
+                                            <div style="font-size: 16px; font-weight: 700; color: #10b981;">@quiz.QuestionsCorrect</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">HINTS USED</div>
+                                            <div style="font-size: 16px; font-weight: 700; color: #f59e0b;">@quiz.UsedHints</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" @onclick="@(() => ScheduleTutoring(detailedStudent))">
+                        <span>📅</span>
+                        <span>Schedule Session</span>
+                    </button>
+                    <button class="btn btn-secondary" @onclick="CloseDetailsModal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+<script>
+    window.downloadFile = function(filename, base64Data) {
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = 'data:text/csv;base64,' + base64Data;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
 @code {
     private int teacherId = 0;
     private bool isLoading = true;
@@ -981,6 +1085,120 @@
     private DateTime tutoringDateTime = DateTime.Now.AddDays(1);
     private int tutoringDuration = 60;
     private string tutoringNotes = "";
+    private bool showDetailsModal = false;
+    private StudentViewModel detailedStudent;
+    private List<QuizPerformance> studentQuizzes = new();
+
+    private async Task ExportData()
+    {
+        try
+        {
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Student Name,Email,Quizzes Taken,Average Score,Last Activity");
+
+            foreach (var student in students)
+            {
+                csv.AppendLine($"{student.StudentName},{student.StudentEmail},{student.QuizzesTaken},{student.AverageScore}%,{student.LastActivityDate:yyyy-MM-dd}");
+            }
+
+            var fileName = $"students_export_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+            var base64 = Convert.ToBase64String(bytes);
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error exporting data: {ex.Message}");
+        }
+    }
+
+    private async Task ViewStudentDetails(StudentViewModel student)
+    {
+        try
+        {
+            detailedStudent = student;
+            await LoadStudentQuizDetails(student.StudentId);
+            showDetailsModal = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task LoadStudentQuizDetails(int studentId)
+    {
+        try
+        {
+            var quizDb = new QuizDB();
+            var resultDb = new ResultDB();
+
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
+            studentQuizzes = new List<QuizPerformance>();
+
+            foreach (var quiz in teacherQuizzes)
+            {
+                var results = await resultDb.GetStudentQuizResultsAsync(studentId, quiz.QuizId);
+
+                if (results.Count > 0)
+                {
+                    int correct = results.Count(r => r.is_correct == 1);
+                    int score = (int)Math.Round((double)correct / results.Count * 100);
+                    var lastAttempt = results.Max(r => r.answered_at);
+
+                    studentQuizzes.Add(new QuizPerformance
+                        {
+                            QuizName = quiz.QuizName,
+                            Score = score,
+                            QuestionsTotal = results.Count,
+                            QuestionsCorrect = correct,
+                            CompletedAt = lastAttempt,
+                            UsedHints = results.Count(r => r.used_hint == 1)
+                        });
+                }
+            }
+
+            studentQuizzes = studentQuizzes.OrderByDescending(q => q.CompletedAt).ToList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading quiz details: {ex.Message}");
+        }
+    }
+
+    private void CloseDetailsModal()
+    {
+        showDetailsModal = false;
+        detailedStudent = null;
+        studentQuizzes.Clear();
+    }
+
+    private string GetScoreBackground(int score)
+    {
+        if (score >= 90) return "#d1fae5";
+        if (score >= 75) return "#dbeafe";
+        if (score >= 60) return "#fef3c7";
+        return "#fee2e2";
+    }
+
+    private string GetScoreColor(int score)
+    {
+        if (score >= 90) return "#065f46";
+        if (score >= 75) return "#1e40af";
+        if (score >= 60) return "#92400e";
+        return "#991b1b";
+    }
+
+    private class QuizPerformance
+    {
+        public string QuizName { get; set; }
+        public int Score { get; set; }
+        public int QuestionsTotal { get; set; }
+        public int QuestionsCorrect { get; set; }
+        public DateTime CompletedAt { get; set; }
+        public int UsedHints { get; set; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -1148,7 +1366,7 @@
 
     private void ViewStudentDetails(StudentViewModel student)
     {
-        // Placeholder for future implementation
+        
         System.Diagnostics.Debug.WriteLine($"Viewing details for {student.StudentName}");
     }
 
