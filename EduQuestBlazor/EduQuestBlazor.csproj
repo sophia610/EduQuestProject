@@ -7,8 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Pages\NotificationsTeacher.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DBL\DBL.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Components\Pages\NotificationsTeacher.razor" />
   </ItemGroup>
 
 </Project>
