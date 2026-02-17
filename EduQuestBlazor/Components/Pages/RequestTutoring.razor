@@ -1,0 +1,402 @@
+﻿@page "/request-tutoring/{TeacherId:int}"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage session
+@inject NavigationManager nav
+@using Models
+@using DBL
+
+<PageTitle>Request Tutoring | EduQuest</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fa;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .page-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .form-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        margin: 0 auto 20px;
+    }
+
+    .form-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+        font-size: 15px;
+        color: #6b7280;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s;
+        background: #f9fafb;
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+    .teacher-info {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .teacher-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .teacher-details h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 4px 0;
+    }
+
+    .teacher-details p {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 16px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+    .success-message {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        border: 2px solid #a7f3d0;
+    }
+
+    .error-message {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 16px 20px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        border: 2px solid #fecaca;
+    }
+</style>
+
+<div class="page-container">
+    <div class="form-card">
+        <div class="form-header">
+            <div class="form-icon">📚</div>
+            <h1 class="form-title">Request Tutoring Session</h1>
+            <p class="form-subtitle">Schedule a one-on-one session with your teacher</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="success-message">
+                <span style="font-size: 24px;">✓</span>
+                <span>@successMessage</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">
+                <span style="font-size: 24px;">✗</span>
+                <span>@errorMessage</span>
+            </div>
+        }
+
+        @if (teacher != null)
+        {
+            <div class="teacher-info">
+                <div class="teacher-avatar">@GetInitials(teacher.FullName)</div>
+                <div class="teacher-details">
+                    <h4>@teacher.FullName</h4>
+                    <p>@teacher.Email</p>
+                </div>
+            </div>
+        }
+
+        <div class="form-group">
+            <label class="form-label">Subject / Topic</label>
+            <input type="text"
+                   class="form-input"
+                   placeholder="e.g., Math - Algebra, Physics - Mechanics"
+                   @bind="subject" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Preferred Date & Time</label>
+            <input type="datetime-local"
+                   class="form-input"
+                   @bind="requestedDateTime" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Session Duration</label>
+            <select class="form-select" @bind="duration">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">60 minutes</option>
+                <option value="90">90 minutes</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Additional Notes (Optional)</label>
+            <textarea class="form-textarea"
+                      placeholder="Describe what you need help with, specific topics, or any questions..."
+                      @bind="notes"></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-secondary" @onclick="Cancel">
+                Cancel
+            </button>
+            <button class="btn btn-primary" @onclick="SubmitRequest" disabled="@isSubmitting">
+                @if (isSubmitting)
+                {
+                    <span>⏳ Sending...</span>
+                }
+                else
+                {
+                    <span>📅 Send Request</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int TeacherId { get; set; }
+
+    private Customers teacher;
+    private int studentId = 0;
+    private string subject = "";
+    private DateTime requestedDateTime = DateTime.Now.AddDays(1);
+    private int duration = 60;
+    private string notes = "";
+    private bool isSubmitting = false;
+    private string successMessage = "";
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // בדיקת תלמיד מחובר
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                studentId = result.Value.user_id;
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+                return;
+            }
+
+            // טעינת פרטי המורה
+            var customerDb = new CustomerDB();
+            teacher = await customerDb.SelectByPkAsync(TeacherId);
+
+            if (teacher == null)
+            {
+                errorMessage = "Teacher not found";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+            errorMessage = "An error occurred while loading teacher information";
+        }
+    }
+
+    private async Task SubmitRequest()
+    {
+        try
+        {
+            // ולידציה
+            if (string.IsNullOrWhiteSpace(subject))
+            {
+                errorMessage = "Please enter a subject or topic";
+                return;
+            }
+
+            if (requestedDateTime <= DateTime.Now)
+            {
+                errorMessage = "Please select a future date and time";
+                return;
+            }
+
+            isSubmitting = true;
+            errorMessage = "";
+
+            // יצירת הבקשה
+            var requestDb = new RequestDB();
+            var request = new Request
+                {
+                    TeacherId = TeacherId,
+                    StudentId = studentId,
+                    Subject = subject,
+                    RequestedDateTime = requestedDateTime,
+                    DurationMinutes = duration,
+                    Notes = notes ?? ""
+                };
+
+            await requestDb.CreateRequestAsync(request);
+
+            successMessage = "Tutoring request sent successfully! Your teacher will review it soon.";
+
+            // ניקוי הטופס
+            subject = "";
+            notes = "";
+            requestedDateTime = DateTime.Now.AddDays(1);
+
+            // המתנה קצרה ואז חזרה
+            await Task.Delay(2500);
+            nav.NavigateTo("/student-home");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error submitting request: {ex.Message}");
+            errorMessage = "Failed to send request. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        nav.NavigateTo("/student-home");
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "T";
+        var parts = name.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return name[0].ToString().ToUpper();
+    }
+}

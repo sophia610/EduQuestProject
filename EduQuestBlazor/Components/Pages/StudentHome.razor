@@ -531,6 +531,14 @@
                 <span>🔍</span>
                 <span>Search Quizzes</span>
             </button>
+            <button class="action-btn primary" @onclick="OpenRequestTutoringModal">
+                <span>📅</span>
+                <span>Request Tutoring</span>
+                <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-requests"))">
+                    <span>📬</span>
+                    <span>My Requests</span>
+                </button>
+            </button>
         </div>
     </aside>
 

@@ -615,8 +615,8 @@
                 <button class="action-btn btn-secondary" @onclick="GoBack">
                     ← Back to Dashboard
                 </button>
-                <button class="action-btn btn-primary" @onclick="ContactStudent">
-                    ✉️ Send Message
+                <button class="action-btn btn-primary" @onclick="ScheduleTutoring">
+                    📅 Schedule Tutoring
                 </button>
             </div>
         }
@@ -647,6 +647,10 @@
         public int AvgTime { get; set; }
         public int HintsUsed { get; set; }
         public DateTime CompletedAt { get; set; }
+    }
+    private void ScheduleTutoring()
+    {
+        nav.NavigateTo($"/request-tutoring/{StudentId}");
     }
 
     protected override async Task OnInitializedAsync()
