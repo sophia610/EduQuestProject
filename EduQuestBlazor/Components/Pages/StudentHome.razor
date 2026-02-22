@@ -20,6 +20,7 @@
         background: #f5f7fa;
     }
 
+    /* ── Sidebar ── */
     .sidebar {
         width: 240px;
         background: white;
@@ -79,6 +80,7 @@
         transition: all 0.2s;
         text-align: left;
         font-weight: 500;
+        width: 100%;
     }
 
         .sidebar-item:hover {
@@ -96,6 +98,7 @@
             font-size: 20px;
         }
 
+    /* ── Main layout ── */
     .main-container {
         flex: 1;
         display: flex;
@@ -155,6 +158,7 @@
             transform: scale(1.05);
         }
 
+    /* ── Stats ── */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -211,6 +215,7 @@
         font-weight: 500;
     }
 
+    /* ── Section ── */
     .section {
         background: white;
         border-radius: 16px;
@@ -244,6 +249,7 @@
             color: #764ba2;
         }
 
+    /* ── Quiz cards ── */
     .quiz-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -285,6 +291,7 @@
             gap: 4px;
         }
 
+    /* ── Right sidebar widgets ── */
     .sidebar-right {
         width: 320px;
         display: flex;
@@ -400,57 +407,7 @@
         color: #6b7280;
     }
 
-    .upcoming-item {
-        display: flex;
-        gap: 12px;
-        padding: 12px;
-        background: #f9fafb;
-        border-radius: 10px;
-        margin-bottom: 12px;
-    }
-
-    .upcoming-date {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .date-day {
-        font-size: 18px;
-        font-weight: 700;
-        line-height: 1;
-    }
-
-    .date-month {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        opacity: 0.9;
-    }
-
-    .upcoming-content {
-        flex: 1;
-    }
-
-    .upcoming-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 2px;
-    }
-
-    .upcoming-time {
-        font-size: 12px;
-        color: #6b7280;
-    }
-
+    /* ── Empty state ── */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -463,6 +420,7 @@
         opacity: 0.5;
     }
 
+    /* ── Buttons ── */
     .logout-btn {
         background: #fef2f2;
         border: none;
@@ -479,24 +437,281 @@
             background: #fee2e2;
         }
 
-    .alert-badge {
-        position: relative;
+    /* ── Tutoring Modal ── */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
     }
 
-        .alert-badge::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border: 2px solid white;
-            border-radius: 50%;
+    .modal-box {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        max-width: 520px;
+        width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+        .modal-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #9ca3af;
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+        line-height: 1;
+    }
+
+        .close-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        background: #f9fafb;
+        transition: all 0.2s;
+        color: #1f2937;
+    }
+
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    .success-msg {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 14px;
+        border: 1px solid #a7f3d0;
+    }
+
+    .error-msg {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 14px;
+        border: 1px solid #fecaca;
+    }
+
+    .modal-footer {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 13px;
+        background: #f3f4f6;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Poppins', sans-serif;
+    }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+    .btn-submit {
+        flex: 2;
+        padding: 13px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Poppins', sans-serif;
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 </style>
 
+<!-- ══════════════════════════════════════════
+     TUTORING REQUEST MODAL
+═══════════════════════════════════════════ -->
+@if (showRequestModal)
+{
+    <div class="modal-overlay" @onclick="CloseRequestModal">
+        <div class="modal-box" @onclick:stopPropagation="true">
+
+            <div class="modal-header">
+                <h2>📅 Request Tutoring Session</h2>
+                <button class="close-btn" @onclick="CloseRequestModal">×</button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <label class="form-label">Select Teacher</label>
+                    <select class="form-select" @bind="selectedTeacherId">
+                        <option value="0">-- Choose a teacher --</option>
+                        @foreach (var teacher in availableTeachers)
+                        {
+                            <option value="@teacher.user_id">@teacher.FullName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Subject / Topic</label>
+                    <input type="text"
+                           class="form-input"
+                           placeholder="e.g., Math - Algebra"
+                           @bind="requestSubject" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preferred Date & Time</label>
+                    <input type="datetime-local"
+                           class="form-input"
+                           @bind="requestDateTime" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <select class="form-select" @bind="requestDuration">
+                        <option value="30">30 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">60 minutes</option>
+                        <option value="90">90 minutes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-textarea"
+                              placeholder="Describe what you need help with..."
+                              @bind="requestNotes"></textarea>
+                </div>
+
+                @if (!string.IsNullOrEmpty(requestSuccess))
+                {
+                    <div class="success-msg">✓ @requestSuccess</div>
+                }
+                @if (!string.IsNullOrEmpty(requestError))
+                {
+                    <div class="error-msg">✗ @requestError</div>
+                }
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" @onclick="CloseRequestModal">Cancel</button>
+                <button class="btn-submit" @onclick="SubmitTutoringRequest" disabled="@isSubmitting">
+                    @(isSubmitting ? "Sending..." : "📅 Send Request")
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+<!-- ══════════════════════════════════════════
+     DASHBOARD
+═══════════════════════════════════════════ -->
 <div class="dashboard">
+
+    <!-- Left Sidebar -->
     <aside class="sidebar">
         <div class="logo">
             <div class="logo-icon">Q</div>
@@ -531,19 +746,22 @@
                 <span>🔍</span>
                 <span>Search Quizzes</span>
             </button>
-            <button class="action-btn primary" @onclick="OpenRequestTutoringModal">
+            <button class="sidebar-item" @onclick="OpenRequestTutoringModal">
                 <span>📅</span>
                 <span>Request Tutoring</span>
-                <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-requests"))">
-                    <span>📬</span>
-                    <span>My Requests</span>
-                </button>
+            </button>
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/my-requests"))">
+                <span>📬</span>
+                <span>My Requests</span>
             </button>
         </div>
     </aside>
 
+    <!-- Main -->
     <div class="main-container">
         <main class="main-content">
+
+            <!-- Header -->
             <div class="header">
                 <div>
                     <h1 class="greeting">Hello, @studentName!</h1>
@@ -555,6 +773,7 @@
                 </div>
             </div>
 
+            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon purple">📝</div>
@@ -573,6 +792,7 @@
                 </div>
             </div>
 
+            <!-- Popular Quizzes -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">Popular Quizzes</h2>
@@ -610,6 +830,7 @@
                 }
             </div>
 
+            <!-- Recent Activity -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">Recent Activity</h2>
@@ -637,9 +858,12 @@
                     </div>
                 }
             </div>
+
         </main>
 
+        <!-- Right Sidebar -->
         <aside class="sidebar-right">
+
             <div class="widget">
                 <h3 class="widget-title">Your Progress</h3>
                 @if (subjectProgress == null || subjectProgress.Count == 0)
@@ -709,16 +933,20 @@
                     </div>
                 </div>
             </div>
+
         </aside>
     </div>
 </div>
 
 @code {
+    /* ── Auth ── */
     private string studentName = "";
     private int studentId = 0;
+
+    /* ── Quiz data ── */
     private List<Quiz> allQuizzes;
 
-    // ✅ נתונים דינמיים
+    /* ── Stats ── */
     private int totalAvailableQuizzes = 0;
     private int completedQuizzes = 0;
     private int dayStreak = 0;
@@ -726,11 +954,28 @@
     private int overallAccuracy = 0;
     private int totalStudyHours = 0;
 
-    // ✅ רשימות דינמיות
+    /* ── Lists ── */
     private List<RecentActivityItem> recentActivity;
     private List<SubjectProgress> subjectProgress;
     private List<Achievement> achievements;
 
+    /* ══════════════════════════════════════
+       TUTORING MODAL STATE
+    ═══════════════════════════════════════ */
+    private bool showRequestModal = false;
+    private int selectedTeacherId = 0;
+    private string requestSubject = "";
+    private DateTime requestDateTime = DateTime.Now.AddDays(1);
+    private int requestDuration = 60;
+    private string requestNotes = "";
+    private string requestSuccess = "";
+    private string requestError = "";
+    private bool isSubmitting = false;
+    private List<Customers> availableTeachers = new();
+
+    /* ══════════════════════════════════════
+       LIFECYCLE
+    ═══════════════════════════════════════ */
     protected override async Task OnInitializedAsync()
     {
         try
@@ -740,8 +985,6 @@
             {
                 studentName = result.Value.FullName;
                 studentId = result.Value.user_id;
-
-                // טעינת כל הנתונים
                 await LoadAllData();
             }
             else
@@ -751,11 +994,14 @@
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error in OnInitializedAsync: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"OnInitializedAsync error: {ex.Message}");
             nav.NavigateTo("/login");
         }
     }
 
+    /* ══════════════════════════════════════
+       DATA LOADING
+    ═══════════════════════════════════════ */
     private async Task LoadAllData()
     {
         try
@@ -763,49 +1009,30 @@
             var quizDb = new QuizDB();
             var resultDb = new ResultDB();
 
-            // 1. טעינת כל החידונים הזמינים
             allQuizzes = await quizDb.GetAllQuizzesAsync();
             totalAvailableQuizzes = allQuizzes.Count;
 
-            // 2. טעינת כל התוצאות של התלמיד
             var allResults = await resultDb.GetAllStudentResultsAsync(studentId);
 
-            // 3. חישוב חידונים שהושלמו (ייחודיים)
-            completedQuizzes = allResults
-                .Select(r => r.quiz_id)
-                .Distinct()
-                .Count();
-
-            // 4. חישוב Day Streak (ימים רצופים של פעילות)
+            completedQuizzes = allResults.Select(r => r.quiz_id).Distinct().Count();
             dayStreak = CalculateDayStreak(allResults);
-
-            // 5. חישוב סך שאלות שנענו
             totalQuestionsAnswered = allResults.Count;
 
-            // 6. חישוב דיוק כללי
             if (totalQuestionsAnswered > 0)
             {
-                int correctAnswers = allResults.Count(r => r.is_correct == 1);
-                overallAccuracy = (int)Math.Round((double)correctAnswers / totalQuestionsAnswered * 100);
+                int correct = allResults.Count(r => r.is_correct == 1);
+                overallAccuracy = (int)Math.Round((double)correct / totalQuestionsAnswered * 100);
             }
 
-            // 7. חישוב זמן לימוד (בשעות) - מסך הזמן שלקח לענות על שאלות
             totalStudyHours = (int)Math.Round(allResults.Sum(r => r.time_taken) / 3600.0);
 
-            // 8. טעינת פעילות אחרונה
             await LoadRecentActivity(allResults);
-
-            // 9. טעינת התקדמות לפי נושאים
             await LoadSubjectProgress(allResults);
-
-            // 10. טעינת הישגים
             LoadAchievements(allResults);
-
-            System.Diagnostics.Debug.WriteLine($"Data loaded successfully for student {studentId}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadAllData error: {ex.Message}");
         }
     }
 
@@ -813,28 +1040,21 @@
     {
         if (results.Count == 0) return 0;
 
-        var sortedDates = results
+        var sorted = results
             .Select(r => r.answered_at.Date)
             .Distinct()
             .OrderByDescending(d => d)
             .ToList();
 
-        if (sortedDates.Count == 0) return 0;
-
-        // בדיקה אם יש פעילות היום או אתמול
         var today = DateTime.Now.Date;
-        if (sortedDates[0] != today && sortedDates[0] != today.AddDays(-1))
-            return 0;
+        if (sorted[0] != today && sorted[0] != today.AddDays(-1)) return 0;
 
         int streak = 1;
-        for (int i = 1; i < sortedDates.Count; i++)
+        for (int i = 1; i < sorted.Count; i++)
         {
-            if (sortedDates[i - 1].AddDays(-1) == sortedDates[i])
-                streak++;
-            else
-                break;
+            if (sorted[i - 1].AddDays(-1) == sorted[i]) streak++;
+            else break;
         }
-
         return streak;
     }
 
@@ -843,9 +1063,9 @@
         try
         {
             recentActivity = new List<RecentActivityItem>();
+            var quizDb = new QuizDB();
 
-            // קבלת חידונים שהושלמו עם התאריכים
-            var completedQuizzes = allResults
+            var recent = allResults
                 .GroupBy(r => r.quiz_id)
                 .Select(g => new
                 {
@@ -854,31 +1074,27 @@
                     Results = g.ToList()
                 })
                 .OrderByDescending(x => x.CompletedAt)
-                .Take(4)
-                .ToList();
+                .Take(4);
 
-            var quizDb = new QuizDB();
-
-            foreach (var cq in completedQuizzes)
+            foreach (var item in recent)
             {
-                var quiz = await quizDb.GetQuizWithQuestionsAsync(cq.QuizId);
-                if (quiz != null)
-                {
-                    int correct = cq.Results.Count(r => r.is_correct == 1);
-                    int score = (int)Math.Round((double)correct / cq.Results.Count * 100);
+                var quiz = await quizDb.GetQuizWithQuestionsAsync(item.QuizId);
+                if (quiz == null) continue;
 
-                    recentActivity.Add(new RecentActivityItem
-                        {
-                            QuizName = quiz.QuizName,
-                            Score = score,
-                            CompletedAt = cq.CompletedAt
-                        });
-                }
+                int correct = item.Results.Count(r => r.is_correct == 1);
+                int score = (int)Math.Round((double)correct / item.Results.Count * 100);
+
+                recentActivity.Add(new RecentActivityItem
+                    {
+                        QuizName = quiz.QuizName,
+                        Score = score,
+                        CompletedAt = item.CompletedAt
+                    });
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading recent activity: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadRecentActivity error: {ex.Message}");
             recentActivity = new List<RecentActivityItem>();
         }
     }
@@ -888,43 +1104,35 @@
         try
         {
             subjectProgress = new List<SubjectProgress>();
-            var quizDb = new QuizDB();
             var subjectDb = new SubjectDB();
-
-            // קבלת כל ה-Subjects
             var allSubjects = await subjectDb.GetAllSubjectsAsync();
 
             foreach (var subject in allSubjects)
             {
-                // קבלת כל החידונים של ה-Subject הזה
                 var subjectQuizzes = allQuizzes.Where(q => q.SubjectId == subject.subject_id).ToList();
-
                 if (subjectQuizzes.Count == 0) continue;
 
-                // קבלת התוצאות של התלמיד בחידונים אלו
                 var subjectResults = allResults
                     .Where(r => subjectQuizzes.Any(sq => sq.QuizId == r.quiz_id))
                     .ToList();
 
-                if (subjectResults.Count > 0)
-                {
-                    int correct = subjectResults.Count(r => r.is_correct == 1);
-                    int avgScore = (int)Math.Round((double)correct / subjectResults.Count * 100);
+                if (subjectResults.Count == 0) continue;
 
-                    subjectProgress.Add(new SubjectProgress
-                        {
-                            SubjectName = subject.subject_name,
-                            AverageScore = avgScore
-                        });
-                }
+                int correct = subjectResults.Count(r => r.is_correct == 1);
+                int avgScore = (int)Math.Round((double)correct / subjectResults.Count * 100);
+
+                subjectProgress.Add(new SubjectProgress
+                    {
+                        SubjectName = subject.subject_name,
+                        AverageScore = avgScore
+                    });
             }
 
-            // מיון לפי ציון
             subjectProgress = subjectProgress.OrderByDescending(sp => sp.AverageScore).ToList();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading subject progress: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadSubjectProgress error: {ex.Message}");
             subjectProgress = new List<SubjectProgress>();
         }
     }
@@ -935,14 +1143,12 @@
         {
             achievements = new List<Achievement>();
 
-            // הישג 1: Perfect Score (100% בחידון)
             var perfectQuizzes = allResults
                 .GroupBy(r => r.quiz_id)
                 .Where(g => g.All(r => r.is_correct == 1))
                 .ToList();
 
             if (perfectQuizzes.Count > 0)
-            {
                 achievements.Add(new Achievement
                     {
                         Name = "Perfect Score",
@@ -950,27 +1156,18 @@
                         Icon = "🏆",
                         Type = "gold"
                     });
-            }
 
-            // הישג 2: Speed Master (זמן ממוצע מהיר)
-            var avgTimePerQuestion = allResults.Count > 0
-                ? allResults.Average(r => r.time_taken)
-                : 0;
-
-            if (avgTimePerQuestion > 0 && avgTimePerQuestion < 30) // פחות מ-30 שניות לשאלה
-            {
+            double avgTime = allResults.Count > 0 ? allResults.Average(r => r.time_taken) : 0;
+            if (avgTime > 0 && avgTime < 30)
                 achievements.Add(new Achievement
                     {
                         Name = "Speed Master",
-                        Description = $"Avg {(int)avgTimePerQuestion}s per question",
+                        Description = $"Avg {(int)avgTime}s per question",
                         Icon = "⚡",
                         Type = "silver"
                     });
-            }
 
-            // הישג 3: Consistent Learner (Streak)
             if (dayStreak >= 3)
-            {
                 achievements.Add(new Achievement
                     {
                         Name = "Consistent Learner",
@@ -978,11 +1175,8 @@
                         Icon = "🎯",
                         Type = "bronze"
                     });
-            }
 
-            // הישג 4: Quiz Master (השלמת הרבה חידונים)
             if (completedQuizzes >= 10)
-            {
                 achievements.Add(new Achievement
                     {
                         Name = "Quiz Master",
@@ -990,11 +1184,8 @@
                         Icon = "📚",
                         Type = "gold"
                     });
-            }
 
-            // הישג 5: High Scorer (ציון ממוצע גבוה)
             if (overallAccuracy >= 90)
-            {
                 achievements.Add(new Achievement
                     {
                         Name = "High Scorer",
@@ -1002,28 +1193,111 @@
                         Icon = "⭐",
                         Type = "gold"
                     });
-            }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading achievements: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadAchievements error: {ex.Message}");
             achievements = new List<Achievement>();
         }
     }
 
+    /* ══════════════════════════════════════
+       TUTORING MODAL LOGIC
+    ═══════════════════════════════════════ */
+    private async Task OpenRequestTutoringModal()
+    {
+        try
+        {
+            var customerDb = new CustomerDB();
+            var all = await customerDb.GetAllAsync();
+            availableTeachers = all.Where(c => c.Role == 1).ToList();
+
+            // reset form
+            selectedTeacherId = 0;
+            requestSubject = "";
+            requestDateTime = DateTime.Now.AddDays(1);
+            requestDuration = 60;
+            requestNotes = "";
+            requestSuccess = "";
+            requestError = "";
+
+            showRequestModal = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"OpenRequestTutoringModal error: {ex.Message}");
+        }
+    }
+
+    private async Task SubmitTutoringRequest()
+    {
+        // ── Validation ──
+        if (selectedTeacherId == 0)
+        {
+            requestError = "Please select a teacher.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(requestSubject))
+        {
+            requestError = "Please enter a subject.";
+            return;
+        }
+        if (requestDateTime <= DateTime.Now)
+        {
+            requestError = "Please select a future date and time.";
+            return;
+        }
+
+        isSubmitting = true;
+        requestError = "";
+
+        try
+        {
+            var requestDb = new RequestDB();
+            var request = new Request
+                {
+                    TeacherId = selectedTeacherId,
+                    StudentId = studentId,
+                    Subject = requestSubject,
+                    RequestedDateTime = requestDateTime,
+                    DurationMinutes = requestDuration,
+                    Notes = requestNotes ?? ""
+                };
+
+            await requestDb.CreateRequestAsync(request);
+
+            requestSuccess = "Request sent successfully! Your teacher will review it soon.";
+            await Task.Delay(2000);
+            CloseRequestModal();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"SubmitTutoringRequest error: {ex.Message}");
+            requestError = "Failed to send request. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void CloseRequestModal()
+    {
+        showRequestModal = false;
+        requestSuccess = "";
+        requestError = "";
+    }
+
+    /* ══════════════════════════════════════
+       HELPERS
+    ═══════════════════════════════════════ */
     private string GetRelativeTime(DateTime date)
     {
-        var timeSpan = DateTime.Now - date;
-
-        if (timeSpan.TotalMinutes < 60)
-            return $"{(int)timeSpan.TotalMinutes} min ago";
-        if (timeSpan.TotalHours < 24)
-            return $"{(int)timeSpan.TotalHours} hours ago";
-        if (timeSpan.TotalDays < 7)
-            return $"{(int)timeSpan.TotalDays} days ago";
-        if (timeSpan.TotalDays < 30)
-            return $"{(int)(timeSpan.TotalDays / 7)} weeks ago";
-
+        var ts = DateTime.Now - date;
+        if (ts.TotalMinutes < 60) return $"{(int)ts.TotalMinutes} min ago";
+        if (ts.TotalHours < 24) return $"{(int)ts.TotalHours} hours ago";
+        if (ts.TotalDays < 7) return $"{(int)ts.TotalDays} days ago";
+        if (ts.TotalDays < 30) return $"{(int)(ts.TotalDays / 7)} weeks ago";
         return date.ToString("MMM dd, yyyy");
     }
 
@@ -1037,12 +1311,11 @@
     {
         if (string.IsNullOrEmpty(name)) return "U";
         var parts = name.Split(' ');
-        if (parts.Length >= 2)
-            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        if (parts.Length >= 2) return $"{parts[0][0]}{parts[1][0]}".ToUpper();
         return name[0].ToString().ToUpper();
     }
 
-    // ✅ מחלקות עזר
+    /* ── Inner model classes ── */
     private class RecentActivityItem
     {
         public string QuizName { get; set; }

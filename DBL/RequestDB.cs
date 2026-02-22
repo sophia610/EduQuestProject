@@ -60,7 +60,16 @@ namespace DBL
             var requests = await SelectAllAsync(filter);
             return requests.OrderByDescending(r => r.CreatedAt).ToList();
         }
+        public async Task<Request?> GetByIdAsync(int requestId)
+        {
+            Dictionary<string, object> filter = new()
+            {
+                { "request_id", requestId }
+            };
 
+            var requests = await SelectAllAsync(filter);
+            return requests.FirstOrDefault();
+        }
         public async Task<int> UpdateRequestStatusAsync(int requestId, string status)
         {
             Dictionary<string, object> values = new()

@@ -302,7 +302,7 @@
     {
         try
         {
-            // בדיקת תלמיד מחובר
+           
             var result = await session.GetAsync<Customers>("user");
             if (result.Success && result.Value != null)
             {
@@ -314,7 +314,6 @@
                 return;
             }
 
-            // טעינת פרטי המורה
             var customerDb = new CustomerDB();
             teacher = await customerDb.SelectByPkAsync(TeacherId);
 

@@ -20,6 +20,7 @@
         background: #f5f7fa;
     }
 
+    /* ── Sidebar ── */
     .sidebar {
         width: 240px;
         background: white;
@@ -79,6 +80,8 @@
         transition: all 0.2s;
         text-align: left;
         font-weight: 500;
+        width: 100%;
+        position: relative;
     }
 
         .sidebar-item:hover {
@@ -96,22 +99,23 @@
             font-size: 20px;
         }
 
-    .alert-badge {
-        position: relative;
+    /* Badge on sidebar item (e.g. pending requests count) */
+    .sidebar-badge {
+        margin-left: auto;
+        background: #ef4444;
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
     }
 
-        .alert-badge::after {
-            content: '';
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border: 2px solid white;
-            border-radius: 50%;
-        }
-
+    /* ── Main layout ── */
     .main-container {
         flex: 1;
         display: flex;
@@ -171,6 +175,7 @@
             transform: scale(1.05);
         }
 
+    /* ── Stats grid ── */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -218,6 +223,10 @@
             background: #fef2f2;
         }
 
+        .stat-icon.orange {
+            background: #fff7ed;
+        }
+
     .stat-value {
         font-size: 28px;
         font-weight: 700;
@@ -231,6 +240,7 @@
         font-weight: 500;
     }
 
+    /* ── Create quiz banner ── */
     .create-card {
         background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
         border-radius: 20px;
@@ -281,6 +291,7 @@
         gap: 8px;
         transition: all 0.3s;
         z-index: 1;
+        font-family: 'Poppins', sans-serif;
     }
 
         .create-btn:hover {
@@ -288,6 +299,7 @@
             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
 
+    /* ── Sections ── */
     .section {
         background: white;
         border-radius: 16px;
@@ -321,6 +333,7 @@
             color: #8b5cf6;
         }
 
+    /* ── Quiz cards ── */
     .quiz-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -384,6 +397,7 @@
             gap: 4px;
         }
 
+    /* ── Right sidebar ── */
     .sidebar-right {
         width: 320px;
         display: flex;
@@ -413,14 +427,28 @@
     }
 
     .widget-badge {
-        background: #fef2f2;
-        color: #ef4444;
         padding: 4px 10px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 700;
     }
 
+        .widget-badge.red {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .widget-badge.blue {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .widget-badge.orange {
+            background: #fff7ed;
+            color: #f97316;
+        }
+
+    /* ── Struggling students ── */
     .student-item {
         display: flex;
         gap: 12px;
@@ -469,39 +497,41 @@
         font-weight: 500;
     }
 
+    /* ── Tutoring request items ── */
     .request-item {
-        display: flex;
-        gap: 12px;
-        padding: 12px;
         background: #f9fafb;
-        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px;
         margin-bottom: 12px;
+        transition: all 0.2s;
+        border-left: 3px solid #f97316;
     }
 
-    .request-date {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-        border-radius: 10px;
+        .request-item:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+    .request-top {
         display: flex;
-        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .request-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        flex-shrink: 0;
-    }
-
-    .date-day {
-        font-size: 18px;
         font-weight: 700;
-        line-height: 1;
-    }
-
-    .date-month {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        opacity: 0.9;
+        font-size: 13px;
+        flex-shrink: 0;
     }
 
     .request-info {
@@ -511,7 +541,7 @@
     .request-student {
         font-size: 14px;
         font-weight: 600;
-        color: #374151;
+        color: #1f2937;
         margin-bottom: 2px;
     }
 
@@ -520,20 +550,30 @@
         color: #6b7280;
     }
 
+    .request-datetime {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
     .request-actions {
         display: flex;
         gap: 8px;
-        margin-top: 8px;
     }
 
     .request-btn {
-        padding: 6px 12px;
-        border-radius: 6px;
+        flex: 1;
+        padding: 7px 0;
+        border-radius: 8px;
         font-size: 12px;
         font-weight: 600;
         border: none;
         cursor: pointer;
         transition: all 0.2s;
+        font-family: 'Poppins', sans-serif;
     }
 
         .request-btn.accept {
@@ -554,6 +594,12 @@
                 background: #fecaca;
             }
 
+        .request-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    /* ── Top quizzes widget ── */
     .quiz-stats-item {
         display: flex;
         justify-content: space-between;
@@ -562,7 +608,13 @@
         background: #f9fafb;
         border-radius: 10px;
         margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
     }
+
+        .quiz-stats-item:hover {
+            background: #f3f4f6;
+        }
 
     .quiz-stat-info {
         flex: 1;
@@ -597,6 +649,7 @@
         text-transform: uppercase;
     }
 
+    /* ── Empty / utility ── */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
@@ -619,14 +672,34 @@
         cursor: pointer;
         font-size: 14px;
         transition: all 0.2s;
+        font-family: 'Poppins', sans-serif;
     }
 
         .logout-btn:hover {
             background: #fee2e2;
         }
+
+    .view-all-link {
+        display: block;
+        text-align: center;
+        color: #3b82f6;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        margin-top: 4px;
+    }
+
+        .view-all-link:hover {
+            background: #eff6ff;
+        }
 </style>
 
 <div class="dashboard">
+
+    <!-- ══ Left Sidebar ══ -->
     <aside class="sidebar">
         <div class="logo">
             <div class="logo-icon">Q</div>
@@ -645,9 +718,13 @@
                 <span>📚</span>
                 <span>My Quizzes</span>
             </button>
-            <button class="sidebar-item alert-badge" @onclick="@(()=>nav.NavigateTo("/requests"))">
+            <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/requests"))">
                 <span>📬</span>
                 <span>Requests</span>
+                @if (pendingRequestsCount > 0)
+                {
+                    <span class="sidebar-badge">@pendingRequestsCount</span>
+                }
             </button>
             <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/students"))">
                 <span>👥</span>
@@ -660,12 +737,19 @@
             <button class="sidebar-item" @onclick="@(()=>nav.NavigateTo("/notifications-teacher"))">
                 <span>🔔</span>
                 <span>Notifications</span>
+                @if (pendingRequestsCount > 0)
+                {
+                    <span class="sidebar-badge">@pendingRequestsCount</span>
+                }
             </button>
         </div>
     </aside>
 
+    <!-- ══ Main ══ -->
     <div class="main-container">
         <main class="main-content">
+
+            <!-- Header -->
             <div class="header">
                 <div>
                     <h1 class="greeting">Welcome back, @teacherName!</h1>
@@ -677,40 +761,43 @@
                 </div>
             </div>
 
+            <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon green">✓</div>
-                    <div class="stat-value">@GetCompletedTodayCount()</div>
+                    <div class="stat-value">@completedToday</div>
                     <div class="stat-label">Completed Today</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon purple">👥</div>
-                    <div class="stat-value">@GetStudentCount()</div>
+                    <div class="stat-value">@totalStudents</div>
                     <div class="stat-label">Active Students</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon blue">✓</div>
-                    <div class="stat-value">@GetCompletedCount()</div>
+                    <div class="stat-value">@totalCompletions</div>
                     <div class="stat-label">Total Completions</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon red">⚠️</div>
-                    <div class="stat-value">3</div>
-                    <div class="stat-label">Need Attention</div>
+                    <div class="stat-icon orange">📬</div>
+                    <div class="stat-value">@pendingRequestsCount</div>
+                    <div class="stat-label">Pending Requests</div>
                 </div>
             </div>
 
+            <!-- Create quiz banner -->
             <div class="create-card">
                 <div class="create-content">
                     <h2>Create a new quiz</h2>
-                    <p>Build engaging quizzes for the students in minutes</p>
+                    <p>Build engaging quizzes for your students in minutes</p>
                 </div>
-                <button class="create-btn" @onclick="GoToCreateQuiz">
+                <button class="create-btn" @onclick="@(()=>nav.NavigateTo("/create-quiz"))">
                     <span>➕</span>
                     <span>Create Quiz</span>
                 </button>
             </div>
 
+            <!-- Recent Quizzes -->
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">Recent Quizzes</h2>
@@ -751,17 +838,21 @@
                     </div>
                 }
             </div>
+
         </main>
 
+        <!-- ══ Right Sidebar ══ -->
         <aside class="sidebar-right">
+
+            <!-- Struggling Students -->
             <div class="widget">
                 <div class="widget-header">
                     <h3 class="widget-title">Struggling Students</h3>
-                    <div class="widget-badge">@strugglingStudents.Count</div>
+                    <div class="widget-badge red">@strugglingStudents.Count</div>
                 </div>
                 @if (strugglingStudents.Count == 0)
                 {
-                    <div style="text-align: center; padding: 20px; color: #6b7280;">
+                    <div style="text-align:center; padding:20px; color:#6b7280;">
                         <p>🎉 All students are doing well!</p>
                     </div>
                 }
@@ -769,7 +860,8 @@
                 {
                     @foreach (var student in strugglingStudents)
                     {
-                        <div class="student-item" @onclick="@(()=>nav.NavigateTo($"/student-details/{student.StudentId}"))">
+                        <div class="student-item"
+                             @onclick="@(()=>nav.NavigateTo($"/student-details/{student.StudentId}"))">
                             <div class="student-avatar">@GetInitials(student.StudentName)</div>
                             <div class="student-info">
                                 <div class="student-name">@student.StudentName</div>
@@ -780,47 +872,73 @@
                 }
             </div>
 
+            <!-- ★ LIVE Tutoring Requests from DB ★ -->
             <div class="widget">
                 <div class="widget-header">
-                    <h3 class="widget-title">Tutoring Requests</h3>
-                    <div class="widget-badge" style="background: #eff6ff; color: #3b82f6;">2</div>
+                    <h3 class="widget-title">📬 Tutoring Requests</h3>
+                    <div class="widget-badge orange">@pendingRequests.Count pending</div>
                 </div>
-                <div class="request-item">
-                    <div class="request-date">
-                        <div class="date-day">12</div>
-                        <div class="date-month">NOV</div>
+
+                @if (pendingRequests.Count == 0)
+                {
+                    <div style="text-align:center; padding:20px; color:#6b7280;">
+                        <p style="font-size:28px; margin-bottom:8px;">📭</p>
+                        <p>No pending requests</p>
                     </div>
-                    <div class="request-info">
-                        <div class="request-student">Michael Chen</div>
-                        <div class="request-subject">Math - Algebra help</div>
-                        <div class="request-actions">
-                            <button class="request-btn accept">Accept</button>
-                            <button class="request-btn decline">Decline</button>
+                }
+                else
+                {
+                    @foreach (var req in pendingRequests.Take(3))
+                    {
+                        <div class="request-item">
+                            <div class="request-top">
+                                <div class="request-avatar">@GetInitials(req.StudentName)</div>
+                                <div class="request-info">
+                                    <div class="request-student">@req.StudentName</div>
+                                    <div class="request-subject">📖 @req.Subject</div>
+                                    <div class="request-datetime">
+                                        📅 @req.RequestedDateTime.ToString("dd MMM, HH:mm")
+                                        · @req.DurationMinutes min
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="request-actions">
+                                <button class="request-btn accept"
+                                        @onclick="@(async () => await RespondToRequest(req.RequestId, "Accepted"))"
+                                        disabled="@req.IsProcessing">
+                                    ✓ Accept
+                                </button>
+                                <button class="request-btn decline"
+                                        @onclick="@(async () => await RespondToRequest(req.RequestId, "Declined"))"
+                                        disabled="@req.IsProcessing">
+                                    ✕ Decline
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="request-item">
-                    <div class="request-date">
-                        <div class="date-day">14</div>
-                        <div class="date-month">NOV</div>
-                    </div>
-                    <div class="request-info">
-                        <div class="request-student">Lisa Anderson</div>
-                        <div class="request-subject">Physics - Mechanics</div>
-                        <div class="request-actions">
-                            <button class="request-btn accept">Accept</button>
-                            <button class="request-btn decline">Decline</button>
-                        </div>
-                    </div>
-                </div>
+                    }
+
+                    @if (pendingRequests.Count > 3)
+                    {
+                        <span class="view-all-link"
+                              @onclick="@(()=>nav.NavigateTo("/requests"))">
+                            View all @pendingRequests.Count requests →
+                        </span>
+                    }
+                }
+
+                <span class="view-all-link"
+                      @onclick="@(()=>nav.NavigateTo("/requests"))">
+                    Manage all requests →
+                </span>
             </div>
 
+            <!-- Top Performing Quizzes -->
             <div class="widget">
                 <h3 class="widget-title">Top Performing Quizzes</h3>
                 @if (topPerformingQuizzes.Count == 0)
                 {
-                    <div style="text-align: center; padding: 20px; color: #6b7280;">
-                        <p style="font-size: 32px; margin-bottom: 8px;">📊</p>
+                    <div style="text-align:center; padding:20px; color:#6b7280;">
+                        <p style="font-size:32px; margin-bottom:8px;">📊</p>
                         <p>No quiz data yet</p>
                     </div>
                 }
@@ -828,7 +946,8 @@
                 {
                     @foreach (var quiz in topPerformingQuizzes)
                     {
-                        <div class="quiz-stats-item" @onclick="@(()=>nav.NavigateTo($"/quiz-details/{quiz.QuizId}"))">
+                        <div class="quiz-stats-item"
+                             @onclick="@(()=>nav.NavigateTo($"/quiz-details/{quiz.QuizId}"))">
                             <div class="quiz-stat-info">
                                 <div class="quiz-stat-name">@quiz.QuizName</div>
                                 <div class="quiz-stat-meta">@quiz.Completions completions</div>
@@ -841,130 +960,227 @@
                     }
                 }
             </div>
+
         </aside>
     </div>
 </div>
 
 @code {
+    /* ── Auth ── */
     private string teacherName = "";
-    private List<Quiz> recentQuizzes;
+    private int teacherId = 0;
     private bool _initialized = false;
-    private bool _checkingSession = true;
-    private List<StrugglingStudent> strugglingStudents = new();
-    private List<TopQuiz> topPerformingQuizzes = new();
-    private int totalStudents = 0; 
+
+    /* ── Quiz data ── */
+    private List<Quiz> recentQuizzes;
+
+    /* ── Stats ── */
+    private int totalStudents = 0;
     private int totalCompletions = 0;
     private int completedToday = 0;
 
-    private int GetCompletedTodayCount() => completedToday;
-    private class TopQuiz
+    /* ── Requests ── */
+    private List<PendingRequestVM> pendingRequests = new();
+    private int pendingRequestsCount = 0;
+
+    /* ── Struggling students ── */
+    private List<StrugglingStudent> strugglingStudents = new();
+    private List<TopQuiz> topPerformingQuizzes = new();
+
+    /* ══════════════════════════════════════
+       LIFECYCLE
+    ═══════════════════════════════════════ */
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        public int QuizId { get; set; }
-        public string QuizName { get; set; }
-        public int Completions { get; set; }
-        public int AverageScore { get; set; }
+        if (!firstRender || _initialized) return;
+        _initialized = true;
+
+        try
+        {
+            var result = await session.GetAsync<Customers>("user");
+            if (result.Success && result.Value != null)
+            {
+                teacherName = result.Value.FullName;
+                teacherId = result.Value.user_id;
+
+                await LoadAllDataAsync(teacherId);
+            }
+            else
+            {
+                nav.NavigateTo("/login");
+                return;
+            }
+        }
+        catch
+        {
+            nav.NavigateTo("/login");
+            return;
+        }
+
+        StateHasChanged();
     }
 
-    private async Task LoadTopPerformingQuizzesAsync(int teacherId)
+    /* ══════════════════════════════════════
+       DATA LOADING
+    ═══════════════════════════════════════ */
+    private async Task LoadAllDataAsync(int tid)
+    {
+        await LoadRecentQuizzesAsync(tid);
+        await LoadTeacherStatisticsAsync(tid);
+        await LoadStrugglingStudentsAsync(tid);
+        await LoadTopPerformingQuizzesAsync(tid);
+        await LoadPendingRequestsAsync(tid);       // ← NEW
+    }
+
+    private async Task LoadRecentQuizzesAsync(int tid)
+    {
+        try
+        {
+            var db = new QuizDB();
+            recentQuizzes = await db.GetQuizzesByTeacherAsync(tid);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"LoadRecentQuizzes: {ex.Message}");
+        }
+    }
+
+    /* ── Live pending requests from DB ── */
+    private async Task LoadPendingRequestsAsync(int tid)
+    {
+        try
+        {
+            var requestDb = new RequestDB();
+            var customerDb = new CustomerDB();
+            var allRequests = await requestDb.GetPendingRequestsAsync(tid);
+
+            var vms = new List<PendingRequestVM>();
+            foreach (var req in allRequests)
+            {
+                var student = await customerDb.SelectByPkAsync(req.StudentId);
+                vms.Add(new PendingRequestVM
+                    {
+                        RequestId = req.RequestId,
+                        StudentName = student?.FullName ?? "Unknown Student",
+                        Subject = req.Subject,
+                        RequestedDateTime = req.RequestedDateTime,
+                        DurationMinutes = req.DurationMinutes,
+                        Notes = req.Notes,
+                        IsProcessing = false
+                    });
+            }
+
+            pendingRequests = vms;
+            pendingRequestsCount = vms.Count;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"LoadPendingRequests: {ex.Message}");
+            pendingRequests = new();
+            pendingRequestsCount = 0;
+        }
+    }
+
+    /* ── Accept / Decline directly from widget ── */
+    private async Task RespondToRequest(int requestId, string status)
+    {
+        var req = pendingRequests.FirstOrDefault(r => r.RequestId == requestId);
+        if (req == null) return;
+
+        req.IsProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            var requestDb = new RequestDB();
+            await requestDb.UpdateRequestStatusAsync(requestId, status);
+
+            // Remove from the live list
+            pendingRequests.Remove(req);
+            pendingRequestsCount = pendingRequests.Count;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"RespondToRequest: {ex.Message}");
+            req.IsProcessing = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadTeacherStatisticsAsync(int tid)
     {
         try
         {
             var quizDb = new QuizDB();
-            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
-
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(tid);
             if (teacherQuizzes.Count == 0) return;
 
             var resultDb = new ResultDB();
-            var topQuizzesList = new List<TopQuiz>();
+            var uniqueStudents = new HashSet<int>();
+            int completions = 0;
+            var today = DateTime.Today;
 
             foreach (var quiz in teacherQuizzes)
             {
                 var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
 
-                if (results.Count == 0) continue;
-                var completions = results.Where(r => r.score > 0)
-                                        .Select(r => r.student_id)
-                                        .Distinct()
-                                        .Count();
-                var scores = results.Where(r => r.score > 0)
-                                   .GroupBy(r => r.student_id)
-                                   .Select(g => g.First().score)
-                                   .ToList();
+                completedToday += results
+                    .Where(r => r.score > 0 && r.answered_at.Date == today)
+                    .Select(r => r.student_id)
+                    .Distinct()
+                    .Count();
 
-                int avgScore = scores.Count > 0 ? (int)scores.Average() : 0;
+                foreach (var sid in results.Select(r => r.student_id).Distinct())
+                    uniqueStudents.Add(sid);
 
-                if (completions > 0) 
-                {
-                    topQuizzesList.Add(new TopQuiz
-                        {
-                            QuizId = quiz.QuizId,
-                            QuizName = quiz.QuizName,
-                            Completions = completions,
-                            AverageScore = avgScore
-                        });
-                }
+                completions += results
+                    .Where(r => r.score > 0)
+                    .Select(r => r.student_id)
+                    .Distinct()
+                    .Count();
             }
-            topPerformingQuizzes = topQuizzesList
-                .OrderByDescending(q => q.AverageScore)
-                .ThenByDescending(q => q.Completions)
-                .Take(3) // רק 3 חידונים מובילים
-                .ToList();
+
+            totalStudents = uniqueStudents.Count;
+            totalCompletions = completions;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading top performing quizzes: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadTeacherStatistics: {ex.Message}");
         }
     }
-    private class StrugglingStudent
-    {
-        public int StudentId { get; set; }
-        public string StudentName { get; set; }
-        public string Issue { get; set; }
-        public int Score { get; set; }
-    }
 
-    private async Task LoadStrugglingStudentsAsync(int teacherId)
+    private async Task LoadStrugglingStudentsAsync(int tid)
     {
         try
         {
-            // שליפת כל החידונים של המורה
             var quizDb = new QuizDB();
-            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
-
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(tid);
             var resultDb = new ResultDB();
             var customerDb = new CustomerDB();
-
             var studentIssues = new Dictionary<int, (string name, string issue, int score)>();
 
             foreach (var quiz in teacherQuizzes)
             {
                 var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
-                var groupedByStudent = results.GroupBy(r => r.student_id);
-
-                foreach (var group in groupedByStudent)
+                foreach (var group in results.GroupBy(r => r.student_id))
                 {
-                    var studentId = group.Key;
-                    var studentResults = group.ToList();
-                    var score = studentResults.FirstOrDefault()?.score ?? 0;
-                    if (score < 60 && score > 0)
+                    var sid = group.Key;
+                    var score = group.FirstOrDefault()?.score ?? 0;
+                    if (score < 60 && score > 0 && !studentIssues.ContainsKey(sid))
                     {
-                        if (!studentIssues.ContainsKey(studentId))
+                        var student = await customerDb.SelectByPkAsync(sid);
+                        if (student != null)
                         {
-                            var student = await customerDb.SelectByPkAsync(studentId);
-                            if (student != null)
-                            {
-                                string issue = score < 50 ?
-                                    $"Failed {quiz.QuizName} - {score}%" :
-                                    $"Low score in {quiz.QuizName} - {score}%";
-
-                                studentIssues[studentId] = (student.FullName, issue, score);
-                            }
+                            string issue = score < 50
+                                ? $"Failed {quiz.QuizName} – {score}%"
+                                : $"Low score in {quiz.QuizName} – {score}%";
+                            studentIssues[sid] = (student.FullName, issue, score);
                         }
                     }
                 }
             }
 
-            // המרה לרשימה
             strugglingStudents = studentIssues
                 .Select(kvp => new StrugglingStudent
                     {
@@ -973,143 +1189,108 @@
                         Issue = kvp.Value.issue,
                         Score = kvp.Value.score
                     })
-                .OrderBy(s => s.Score) 
-                .Take(3) // רק 3 ראשונים
+                .OrderBy(s => s.Score)
+                .Take(3)
                 .ToList();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading struggling students: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"LoadStrugglingStudents: {ex.Message}");
         }
     }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+    private async Task LoadTopPerformingQuizzesAsync(int tid)
     {
-        if (!firstRender || _initialized)
-            return;
-
-        _initialized = true;
-
         try
         {
-            var result = await session.GetAsync<Customers>("user");
+            var quizDb = new QuizDB();
+            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(tid);
+            var resultDb = new ResultDB();
+            var list = new List<TopQuiz>();
 
-            if (result.Success && result.Value != null)
+            foreach (var quiz in teacherQuizzes)
             {
-                teacherName = result.Value.FullName;
-                await LoadRecentQuizzesAsync(result.Value.user_id);
+                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
+                if (results.Count == 0) continue;
+
+                var completions = results
+                    .Where(r => r.score > 0)
+                    .Select(r => r.student_id)
+                    .Distinct()
+                    .Count();
+
+                var scores = results
+                    .Where(r => r.score > 0)
+                    .GroupBy(r => r.student_id)
+                    .Select(g => g.First().score)
+                    .ToList();
+
+                if (completions > 0)
+                    list.Add(new TopQuiz
+                        {
+                            QuizId = quiz.QuizId,
+                            QuizName = quiz.QuizName,
+                            Completions = completions,
+                            AverageScore = scores.Count > 0 ? (int)scores.Average() : 0
+                        });
             }
-            else
-            {
-                _checkingSession = false;
-                StateHasChanged();
-                return;
-            }
+
+            topPerformingQuizzes = list
+                .OrderByDescending(q => q.AverageScore)
+                .ThenByDescending(q => q.Completions)
+                .Take(3)
+                .ToList();
         }
-        catch
+        catch (Exception ex)
         {
-            _checkingSession = false;
-            StateHasChanged();
-            return;
-        }
-
-        _checkingSession = false;
-        StateHasChanged();
-    }
-
-    protected override void OnParametersSet()
-    {
-
-        if (_checkingSession) return;
-        if (string.IsNullOrEmpty(teacherName))
-        {
-            nav.NavigateTo("/login");
+            System.Diagnostics.Debug.WriteLine($"LoadTopPerformingQuizzes: {ex.Message}");
         }
     }
 
-    private async Task LoadRecentQuizzesAsync(int teacherId)
-    {
-        var db = new QuizDB(); 
-        recentQuizzes = await db.GetQuizzesByTeacherAsync(teacherId);
-        await LoadTeacherStatisticsAsync(teacherId);
-        await LoadStrugglingStudentsAsync(teacherId);
-        await LoadTopPerformingQuizzesAsync(teacherId);
-    }
-
+    /* ══════════════════════════════════════
+       HELPERS
+    ═══════════════════════════════════════ */
     private async Task Logout()
     {
         await session.DeleteAsync("user");
         nav.NavigateTo("/login", true);
     }
 
-    private void GoToCreateQuiz()
-    {
-        nav.NavigateTo("/create-quiz");
-    }
-
     private string GetInitials(string name)
     {
         if (string.IsNullOrEmpty(name)) return "T";
         var parts = name.Split(' ');
-        if (parts.Length >= 2)
-            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        if (parts.Length >= 2) return $"{parts[0][0]}{parts[1][0]}".ToUpper();
         return name[0].ToString().ToUpper();
     }
 
-    private int GetStudentCount() => totalStudents;
-    private int GetCompletedCount() => totalCompletions;
-
-    private int GetRandomStudentCount()
+    /* ══════════════════════════════════════
+       INNER CLASSES
+    ═══════════════════════════════════════ */
+    private class PendingRequestVM
     {
-        var random = new Random();
-        return random.Next(8, 35);
+        public int RequestId { get; set; }
+        public string StudentName { get; set; }
+        public string Subject { get; set; }
+        public DateTime RequestedDateTime { get; set; }
+        public int DurationMinutes { get; set; }
+        public string Notes { get; set; }
+        public bool IsProcessing { get; set; }
     }
-    private async Task LoadTeacherStatisticsAsync(int teacherId)
+
+    private class StrugglingStudent
     {
-        try
-        {
-            var quizDb = new QuizDB();
-            var teacherQuizzes = await quizDb.GetQuizzesByTeacherAsync(teacherId);
+        public int StudentId { get; set; }
+        public string StudentName { get; set; }
+        public string Issue { get; set; }
+        public int Score { get; set; }
+    }
 
-            if (teacherQuizzes.Count == 0) return;
-
-            var resultDb = new ResultDB();
-            var uniqueStudents = new HashSet<int>();
-            int completions = 0;
-            var today = DateTime.Today;
-            foreach (var quiz in teacherQuizzes)
-            {
-                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
-
-                completedToday += results.Where(r => r.score > 0 && r.answered_at.Date == today)
-                                        .Select(r => r.student_id)
-                                        .Distinct()
-                                        .Count();
-            }
-
-            foreach (var quiz in teacherQuizzes)
-            {
-                var results = await resultDb.GetAllQuizResultsAsync(quiz.QuizId);
-
-                if (results.Count > 0)
-                {
-                    var studentsInQuiz = results.Select(r => r.student_id).Distinct();
-                    foreach (var studentId in studentsInQuiz)
-                    {
-                        uniqueStudents.Add(studentId);
-                    }
-                    completions += results.Where(r => r.score > 0)
-                                         .Select(r => r.student_id)
-                                         .Distinct()
-                                         .Count();
-                }
-            }
-
-            totalStudents = uniqueStudents.Count;
-            totalCompletions = completions;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error loading teacher statistics: {ex.Message}");
-        }
+    private class TopQuiz
+    {
+        public int QuizId { get; set; }
+        public string QuizName { get; set; }
+        public int Completions { get; set; }
+        public int AverageScore { get; set; }
     }
 }
